@@ -1791,6 +1791,16 @@
 "difficulty":"intermediate",
 "projectPath":"./public/CYBER TYPE BATTLE/index.html"
 }
+,
+{
+  "projectNo": 179,
+  "projectName": "Mood Tracker Dashboard",
+  "projectType": "Web App",
+  "projectDesc": "A dashboard to track daily moods with charts and insights.",
+  "techStack": ["html", "css", "javascript"],
+  "difficulty": "intermediate",
+  "projectPath": "./public/mood-tracker-dashboard/index.html"
+}
 
 ]
 
