@@ -1963,4 +1963,21 @@
 "difficulty":"advanced",
 "projectPath":"./public/mood-tracker-dashboard/index.html"
 }
+  },
+  {
+    "projectNo": 214,
+    "projectName": "AI Data Analyst",
+    "projectType": "Tool",
+    "projectDesc": "Upload CSV datasets and receive AI-powered exploratory data analysis, visualizations, correlation heatmaps, machine learning recommendations, AI-generated insights, and interactive dataset Q&A.",
+    "techStack": [
+      "javascript",
+      "ai",
+      "machine-learning",
+      "data-analysis",
+      "charts",
+      "api"
+    ],
+    "difficulty": "advanced",
+    "projectPath": "./public/AI-Data-Analyst/"
+  }
 ]
