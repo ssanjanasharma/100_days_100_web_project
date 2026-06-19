@@ -427,6 +427,11 @@ function buildProjectCardHTML({
                     <button class="bookmark-btn ${isBookmarked ? "active" : ""}" data-id="${safeDay}" aria-label="${isBookmarked ? `Remove ${safeName} from bookmarks` : `Bookmark ${safeName}`}">
                         <i class="${isBookmarked ? "fa-solid" : "fa-regular"} fa-bookmark" aria-hidden="true"></i>
                     </button>
+                    <button class="compare-btn" 
+                      data-id="${safeDay}" 
+                      aria-label="Compare ${safeName}">
+                      <i class="fas fa-code-compare"></i>
+                    </button>
                 </div>
             </div>
         `,
@@ -600,6 +605,30 @@ function getAllTechnologies() {
 
 let bookmarkedProjects = [];
 let recentProjects = [];
+let comparedProjects = [];
+
+function toggleCompare(project) {
+  const exists = comparedProjects.find(
+    (item) => item.day === project.day
+  );
+
+  if (exists) {
+    comparedProjects = comparedProjects.filter(
+      (item) => item.day !== project.day
+    );
+    showToast("Removed from comparison");
+  } else {
+    if (comparedProjects.length >= 3) {
+      showToast("You can compare maximum 3 projects");
+      return;
+    }
+
+    comparedProjects.push(project);
+    showToast("Added to comparison");
+  }
+
+  renderComparisonPanel();
+}
 
 try {
   bookmarkedProjects =
@@ -1509,6 +1538,29 @@ function renderRecentProjects() {
   renderRecommendationsForLatestRecentProject();
 }
 
+function renderComparisonPanel() {
+  const panel = document.getElementById("comparisonPanel");
+
+  if (!panel) return;
+
+  if (comparedProjects.length === 0) {
+    panel.innerHTML = "<p>Select projects to compare.</p>";
+    return;
+  }
+
+  panel.innerHTML = comparedProjects.map(project => `
+    <div class="compare-card">
+      <h3>${project.projectName}</h3>
+      <p>Difficulty: ${project.difficulty}</p>
+      <p>Technology: ${project.techStack}</p>
+      <p>Category: ${getCategoryFromTags(
+        project.techStack,
+        project.projectName
+      )}</p>
+    </div>
+  `).join("");
+}
+
 function renderRecommendationsForProject(project) {
   const container = document.getElementById("recommendationsContainer");
   if (!container) return;
@@ -1656,6 +1708,24 @@ function showToast(message) {
     toast.classList.remove("show");
   }, 3000);
 }
+
+document.addEventListener("click", (e) => {
+  const compareBtn = e.target.closest(".compare-btn");
+
+  if (!compareBtn) return;
+
+  e.preventDefault();
+
+  const projectDay = compareBtn.dataset.id;
+
+  const project = PROJECTS.find(
+    (item) => item.day === projectDay
+  );
+
+  if (project) {
+    toggleCompare(project);
+  }
+});
 
 document.addEventListener("click", (e) => {
   const bookmarkBtn = e.target.closest(".bookmark-btn");
