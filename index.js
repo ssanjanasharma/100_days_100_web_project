@@ -422,6 +422,18 @@ function buildProjectCardHTML({
                 <div class="card-actions-left">
                     ${primaryLink}
                 </div>
+                <button 
+                  class="complete-btn ${
+                    completedProjects.includes(day) ? "active" : ""
+                  }"
+                  data-id="${safeDay}"
+                  aria-label="Mark project completed">
+                  ${
+                    completedProjects.includes(day)
+                      ? "✅ Completed"
+                      : "✔ Complete"
+                  }
+                </button>
                 <div class="card-actions-right" style="display: flex; gap: 8px; align-items: center;">
                     ${githubBtn}
                     <button class="bookmark-btn ${isBookmarked ? "active" : ""}" data-id="${safeDay}" aria-label="${isBookmarked ? `Remove ${safeName} from bookmarks` : `Bookmark ${safeName}`}">
@@ -606,6 +618,14 @@ function getAllTechnologies() {
 let bookmarkedProjects = [];
 let recentProjects = [];
 let comparedProjects = [];
+let completedProjects = [];
+
+try {
+  completedProjects =
+    JSON.parse(localStorage.getItem("completedProjects")) || [];
+} catch (error) {
+  console.warn("Could not load completed projects");
+}
 
 function toggleCompare(project) {
   const exists = comparedProjects.find(
@@ -1306,6 +1326,28 @@ function toggleBookmark(project) {
   renderBookmarks();
   renderGrid();
   renderRecentProjects();
+}
+
+function toggleCompletion(project) {
+  const exists = completedProjects.includes(project.day);
+
+  if (exists) {
+    completedProjects = completedProjects.filter(
+      day => day !== project.day
+    );
+    showToast("Project marked as incomplete");
+  } else {
+    completedProjects.push(project.day);
+    showToast("Project completed 🎉");
+  }
+
+  localStorage.setItem(
+    "completedProjects",
+    JSON.stringify(completedProjects)
+  );
+
+  updateProgressTracker();
+  renderGrid();
 }
 
 function updateBookmarkURL() {
@@ -2136,6 +2178,7 @@ if (hasProjectGrid()) {
   renderGrid();
   renderBookmarks();
   renderRecentProjects();
+  updateProgressTracker();
 }
 
 syncProjectCounts();
@@ -2288,6 +2331,24 @@ initTheme();
     ).matches;
     return cursorEnabled && !coarsePointer && !prefersReducedMotion;
   };
+
+  document.addEventListener("click", (e) => {
+  const completeBtn = e.target.closest(".complete-btn");
+
+  if (!completeBtn) return;
+
+  e.preventDefault();
+
+  const projectDay = completeBtn.dataset.id;
+
+  const project = PROJECTS.find(
+    item => item.day === projectDay
+  );
+
+  if (project) {
+    toggleCompletion(project);
+  }
+});
 
   const updateCursorActivationState = () => {
     if (getActivationState() && !isKeyboardNavigating) {
