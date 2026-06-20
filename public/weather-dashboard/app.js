@@ -913,7 +913,40 @@ function updateMapMarkers() {
       fillOpacity: 0.9
     }).addTo(state.map);
     
-    pin.bindPopup(`<b>${city.name}</b><br><button onclick="window.loadCityFromMap(${city.lat}, ${city.lon}, '${city.name.replace(/'/g, "\\'")}', '${city.country.replace(/'/g, "\\'")}')" style="margin-top:6px; font-size:11px; padding:3px 8px; background:var(--accent); border:none; border-radius:6px; color:#fff; cursor:pointer;">Select City</button>`);
+    const popupContainer = document.createElement("div");
+
+    const cityTitle = document.createElement("b");
+    cityTitle.textContent = city.name;
+
+    const lineBreak = document.createElement("br");
+
+    const selectBtn = document.createElement("button");
+    selectBtn.textContent = "Select City";
+
+    selectBtn.style.marginTop = "6px";
+    selectBtn.style.fontSize = "11px";
+    selectBtn.style.padding = "3px 8px";
+    selectBtn.style.background = "var(--accent)";
+    selectBtn.style.border = "none";
+    selectBtn.style.borderRadius = "6px";
+    selectBtn.style.color = "#fff";
+    selectBtn.style.cursor = "pointer";
+
+    selectBtn.addEventListener("click", () => {
+      window.loadCityFromMap(
+        city.lat,
+        city.lon,
+        city.name,
+        city.country
+      );
+    });
+
+    popupContainer.appendChild(cityTitle);
+    popupContainer.appendChild(lineBreak);
+    popupContainer.appendChild(selectBtn);
+
+    pin.bindPopup(popupContainer);
+
     state.mapSavedMarkers.push(pin);
   });
 }
