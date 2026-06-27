@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const jobRoleSelect = document.getElementById('jobRoleSelect');
   const btnAnalyze = document.getElementById('btnAnalyze');
   const btnClearForm = document.getElementById('btnClearForm');
-  
+
   // Loader and Report Sections
   const inputSection = document.getElementById('inputSection');
   const analyzerLoader = document.getElementById('analyzerLoader');
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // File Upload Controls
   dropzone.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', handleFileSelect);
-  
+
   // Drag and Drop
   dropzone.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       panels.forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
       panels[index].classList.add('active');
-      
+
       // Update ARIA roles
       tabs.forEach((t, i) => {
         t.setAttribute('aria-selected', i === index ? 'true' : 'false');
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function processFile(file) {
     const validExtensions = ['pdf', 'docx'];
     const extension = file.name.split('.').pop().toLowerCase();
-    
+
     if (!validExtensions.includes(extension)) {
       alert('Unsupported file format. Please upload a PDF or DOCX file.');
       return;
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     uploadedFileName = file.name;
     uploadedFileSize = formatBytes(file.size);
-    
+
     // Show loading indicator in dropzone
     dropzone.style.display = 'none';
     fileStatusCard.style.display = 'flex';
@@ -278,15 +278,15 @@ document.addEventListener('DOMContentLoaded', () => {
     fileSizeEl.textContent = `Extracting text... (${uploadedFileSize})`;
 
     const reader = new FileReader();
-    
+
     if (extension === 'pdf') {
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const arrayBuffer = e.target.result;
         extractTextFromPdf(arrayBuffer);
       };
       reader.readAsArrayBuffer(file);
     } else if (extension === 'docx') {
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const arrayBuffer = e.target.result;
         extractTextFromDocx(arrayBuffer);
       };
@@ -298,14 +298,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let text = '';
-      
+
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items.map(item => item.str).join(' ');
         text += pageText + '\n';
       }
-      
+
       extractedText = text;
       fileSizeEl.textContent = `${uploadedFileSize} • PDF Text Extracted`;
       checkButtonState();
@@ -320,11 +320,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
       extractedText = result.value;
-      
+
       if (!extractedText.trim()) {
         throw new Error("No text found in Word document.");
       }
-      
+
       fileSizeEl.textContent = `${uploadedFileSize} • Word Text Extracted`;
       checkButtonState();
     } catch (err) {
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let phaseIdx = 0;
-    
+
     function runPhase() {
       if (phaseIdx < phases.length) {
         loaderTitle.textContent = phases[phaseIdx].text;
@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentReview = analysisResults;
         saveReviewToHistory(analysisResults);
         renderReport(analysisResults);
-        
+
         analyzerLoader.style.display = 'none';
         reportContainer.style.display = 'flex';
         inputSection.style.display = 'none';
@@ -378,10 +378,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function runLocalMetricsAnalysis(resumeText, jdText, industry) {
     const resumeLower = resumeText.toLowerCase();
     const jdLower = jdText.toLowerCase();
-    
+
     // 1. SKILLS EXTRACTION & COMPARISON
     const industrySkills = SKILLS_DATABASE[industry] || [];
-    
+
     // Find skills which are explicitly required in the Job Description
     const jdRequiredSkills = industrySkills.filter(skill => {
       // Create exact word boundary check
@@ -405,8 +405,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    const skillsScore = targetSkills.length > 0 
-      ? Math.round((matchedSkills.length / targetSkills.length) * 100) 
+    const skillsScore = targetSkills.length > 0
+      ? Math.round((matchedSkills.length / targetSkills.length) * 100)
       : 70;
 
     // 2. ATS CHECKLIST SCAN
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let presentSectionsCount = 0;
     const checklistItems = [];
-    
+
     for (const key in sections) {
       if (sections[key].present) presentSectionsCount++;
       checklistItems.push({
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. WRITING, GRAMMAR & TONE ANALYSIS (Local NLP Rules)
     const grammarIssues = [];
-    
+
     // Check Weak Verbs
     const weakVerbs = ["responsible for", "assisted with", "participated in", "worked on", "helped to", "duties included"];
     weakVerbs.forEach(verb => {
@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Color code scores
     const overallColor = getScoreColorClass(report.overallScore);
     scoreOverallText.className = `circle-text ${overallColor}`;
-    
+
     // Overall Verdict Description
     if (report.overallScore >= 75) {
       scoreOverallVerdict.textContent = "Excellent Match Profile";
@@ -673,10 +673,10 @@ document.addEventListener('DOMContentLoaded', () => {
     report.checklistItems.forEach(item => {
       const div = document.createElement('div');
       div.className = 'checklist-item';
-      
+
       const icon = item.status ? 'check-circle' : 'alert-triangle';
       const colorClass = item.status ? 'success' : 'fail';
-      
+
       div.innerHTML = `
         <span class="checklist-status-icon ${colorClass}">
           <i data-lucide="${icon}" style="width: 20px; height: 20px;"></i>
@@ -699,7 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       report.grammarIssues.forEach(issue => {
         const tr = document.createElement('tr');
-        
+
         let catClass = 'content';
         if (issue.category === 'passive voice') catClass = 'grammar';
         if (issue.category === 'weak verb') catClass = 'formatting';
@@ -719,7 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7. Reset AI feedback panel state
     aiResultBox.style.display = 'none';
     aiLoader.style.display = 'none';
-    
+
     btnRequestAiReview.innerHTML = '<i data-lucide="sparkles"></i> Generate Critique Report';
 
     // Refresh icons inside rendered fields
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const radius = 36;
     const circumference = 2 * Math.PI * radius; // ~226
     const offset = circumference - (percentage / 100) * circumference;
-    
+
     // Set ring style dash offset
     ringEl.style.strokeDashoffset = offset;
     textEl.textContent = `${percentage}%`;
@@ -766,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTemplateSuggestions(yearsGuess) {
     templatesGrid.innerHTML = '';
-    
+
     const allTemplates = [
       {
         name: "Classic Chronological",
@@ -820,15 +820,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveReviewToHistory(review) {
     // Delete older reviews of the same filename/role to avoid duplicate spam
     reviewsHistory = reviewsHistory.filter(item => !(item.fileName === review.fileName && item.industry === review.industry));
-    
+
     // Add to front of queue
     reviewsHistory.unshift(review);
-    
+
     // Keep max 6 items
     if (reviewsHistory.length > 6) {
       reviewsHistory.pop();
     }
-    
+
     localStorage.setItem('resume_reviewer_history', JSON.stringify(reviewsHistory));
     loadHistory();
   }
@@ -857,7 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'history-card';
       card.setAttribute('data-id', item.id);
-      
+
       card.innerHTML = `
         <div class="history-card-header">
           <span class="history-role" title="${item.fileName}">${item.fileName}</span>
@@ -872,11 +872,11 @@ document.addEventListener('DOMContentLoaded', () => {
       card.addEventListener('click', () => {
         currentReview = item;
         renderReport(item);
-        
+
         // Hide upload view if open
         inputSection.style.display = 'none';
         reportContainer.style.display = 'flex';
-        
+
         // Highlight active sidebar review item visually
         document.querySelectorAll('.history-card').forEach(c => c.style.borderColor = 'var(--border-color)');
         card.style.borderColor = 'var(--accent-primary)';
@@ -905,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     analyzerLoader.style.display = 'none';
     currentReview = null;
     checkButtonState();
-    
+
     // Reset visual sidebar highlights
     document.querySelectorAll('.history-card').forEach(c => c.style.borderColor = 'var(--border-color)');
   }
@@ -921,8 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Simulate high-quality local analysis critique
     setTimeout(() => {
       const localAiText = generateLocalMockAiCritique(currentReview);
-      aiResultBox.innerHTML = localAiText;
-      aiLoader.style.display = 'none';
+      aiResultBox.textContent = localAiText; aiLoader.style.display = 'none';
       aiResultBox.style.display = 'block';
       btnRequestAiReview.disabled = false;
       lucide.createIcons();
@@ -931,7 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function generateLocalMockAiCritique(review) {
     const roleCapitalized = review.industry.charAt(0).toUpperCase() + review.industry.slice(1);
-    
+
     let html = `
       <h4>1. Strategic Executive Evaluation</h4>
       <p>Your resume matches the target <strong>${roleCapitalized} Developer</strong> description with a score of <strong>${review.overallScore}%</strong>. The document has a professional presentation, but currently lacks immediate focus, which might lead recruiters to skip reading. Bullet points must focus on business value and user impact instead of just detailing technical tasks. Adding a strong Summary statement at the top of the resume would improve initial readability.</p>
@@ -948,7 +947,7 @@ document.addEventListener('DOMContentLoaded', () => {
     html += `</ul>`;
 
     html += `<h4>3. Concrete Bullet Action Upgrades</h4><ul>`;
-    
+
     // Construct realistic modifications based on grammar warnings or simple bullet structures
     if (review.industry === 'frontend' || review.industry === 'fullstack') {
       html += `
@@ -995,14 +994,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- PDF EXPORT FUNCTION ---
   function exportToPdf() {
     if (!currentReview) return;
-    
+
     // Configure html2pdf parameters
     const opt = {
-      margin:       [0.5, 0.5, 0.5, 0.5],
-      filename:     `CV_Review_Report_${currentReview.fileName.split('.')[0]}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      margin: [0.5, 0.5, 0.5, 0.5],
+      filename: `CV_Review_Report_${currentReview.fileName.split('.')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
     // Temporarily apply printing classes or styles to make PDF render beautifully
@@ -1013,118 +1012,46 @@ document.addEventListener('DOMContentLoaded', () => {
     element.style.background = '#ffffff';
 
     // Build dedicated HTML structure for printing
-    element.innerHTML = `
-      <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 15px; margin-bottom: 20px;">
-        <h1 style="color: #4f46e5; margin: 0; font-size: 24px; font-family: 'Outfit', sans-serif;">CV Genius - ATS Review Report</h1>
-        <p style="margin: 5px 0 0 0; color: #64748b; font-size: 12px;">Generated on ${currentReview.date} for file: <strong>${currentReview.fileName}</strong></p>
-      </div>
+    element.replaceChildren();
 
-      <div style="display: flex; gap: 20px; margin-bottom: 25px;">
-        <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; flex: 1; text-align: center;">
-          <h4 style="margin: 0 0 5px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Overall Score</h4>
-          <span style="font-size: 28px; font-weight: 800; color: #4f46e5;">${currentReview.overallScore}%</span>
-        </div>
-        <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; flex: 1; text-align: center;">
-          <h4 style="margin: 0 0 5px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">ATS Compliance</h4>
-          <span style="font-size: 28px; font-weight: 800; color: #0891b2;">${currentReview.atsScore}%</span>
-        </div>
-        <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; flex: 1; text-align: center;">
-          <h4 style="margin: 0 0 5px 0; color: #64748b; font-size: 11px; text-transform: uppercase;">Skills Match</h4>
-          <span style="font-size: 28px; font-weight: 800; color: #059669;">${currentReview.skillsScore}%</span>
-        </div>
-      </div>
+    const titleBox = document.createElement("div");
+    titleBox.style.cssText = "border-bottom: 2px solid #4f46e5; padding-bottom: 15px; margin-bottom: 20px;";
 
-      <div style="margin-bottom: 25px;">
-        <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 16px; margin-bottom: 10px;">Executive Summary</h3>
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr>
-            <td style="width: 50%; padding-right: 15px; vertical-align: top;">
-              <h5 style="color: #059669; font-size: 12px; margin: 0 0 5px 0;">Key Strengths:</h5>
-              <ul style="padding-left: 15px; margin: 0; font-size: 11px; line-height: 1.5; color: #475569;">
-                ${currentReview.strengths.map(str => `<li>${str}</li>`).join('')}
-              </ul>
-            </td>
-            <td style="width: 50%; padding-left: 15px; vertical-align: top; border-left: 1px solid #e2e8f0;">
-              <h5 style="color: #dc2626; font-size: 12px; margin: 0 0 5px 0;">Key Recommendations:</h5>
-              <ul style="padding-left: 15px; margin: 0; font-size: 11px; line-height: 1.5; color: #475569;">
-                ${currentReview.weaknesses.map(weak => `<li>${weak}</li>`).join('')}
-              </ul>
-            </td>
-          </tr>
-        </table>
-      </div>
+    const h1 = document.createElement("h1");
+    h1.style.cssText = "color: #4f46e5; margin: 0; font-size: 24px; font-family: 'Outfit', sans-serif;";
+    h1.textContent = "CV Genius - ATS Review Report";
 
-      <div style="margin-bottom: 25px;">
-        <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 16px; margin-bottom: 10px;">Technical Keywords Comparison</h3>
-        <p style="font-size: 11px; color: #64748b; margin: 0 0 10px 0;">Target Role Industry: <strong>${currentReview.industry.toUpperCase()}</strong></p>
-        <div style="margin-bottom: 10px;">
-          <strong style="color: #059669; font-size: 11px; display: block; margin-bottom: 5px;">MATCHED SKILLS:</strong>
-          <p style="font-size: 11px; color: #475569; line-height: 1.4; margin: 0;">
-            ${currentReview.matchedSkills.length > 0 ? currentReview.matchedSkills.join(', ').toUpperCase() : 'None'}
-          </p>
-        </div>
-        <div>
-          <strong style="color: #dc2626; font-size: 11px; display: block; margin-bottom: 5px;">MISSING SKILLS (IMMEDIATE GAPS):</strong>
-          <p style="font-size: 11px; color: #475569; line-height: 1.4; margin: 0;">
-            ${currentReview.missingSkills.length > 0 ? currentReview.missingSkills.join(', ').toUpperCase() : 'None'}
-          </p>
-        </div>
-      </div>
+    const p = document.createElement("p");
+    p.style.cssText = "margin: 5px 0 0 0; color: #64748b; font-size: 12px;";
+    p.textContent = `Generated on ${currentReview.date} for file: ${currentReview.fileName}`;
 
-      <div style="margin-bottom: 25px; page-break-before: always;">
-        <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 16px; margin-bottom: 10px;">ATS Section compliance Audit</h3>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-          ${currentReview.checklistItems.map(item => `
-            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
-              <span>${item.name}</span>
-              <strong style="color: ${item.status ? '#059669' : '#dc2626'}">${item.status ? 'PASSED' : 'FAILED'}</strong>
-            </div>
-          `).join('')}
-        </div>
-      </div>
+    titleBox.append(h1, p);
+    element.appendChild(titleBox);
 
-      <div style="margin-bottom: 25px;">
-        <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 16px; margin-bottom: 10px;">Writing & Grammar Recommendations</h3>
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 11px;">
-          <thead>
-            <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-              <th style="padding: 8px;">Category</th>
-              <th style="padding: 8px;">Issue Found</th>
-              <th style="padding: 8px;">Audit Suggestion</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${currentReview.grammarIssues.map(issue => `
-              <tr style="border-bottom: 1px solid #f1f5f9;">
-                <td style="padding: 8px; font-weight: bold; color: #4f46e5;">${issue.category.toUpperCase()}</td>
-                <td style="padding: 8px;">${issue.snippet}</td>
-                <td style="padding: 8px; color: #475569;">${issue.suggestion}</td>
-              </tr>
-            `).join('')}
-            ${currentReview.grammarIssues.length === 0 ? `
-              <tr>
-                <td colspan="3" style="text-align: center; padding: 15px; color: #059669; font-weight: bold;">
-                  No grammar or style improvements needed!
-                </td>
-              </tr>
-            ` : ''}
-          </tbody>
-        </table>
-      </div>
+    const scoreBox = document.createElement("div");
+    scoreBox.style.cssText = "display: flex; gap: 20px; margin-bottom: 25px;";
 
-      ${aiResultBox.style.display === 'block' ? `
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 16px; margin-bottom: 10px;">AI Advisor Critique</h3>
-          <div style="font-size: 11px; line-height: 1.5; color: #475569;">
-            ${aiResultBox.innerHTML}
-          </div>
-        </div>
-      ` : ''}
+    [
+      ["Overall Score", `${currentReview.overallScore}%`, "#4f46e5"],
+      ["ATS Compliance", `${currentReview.atsScore}%`, "#0891b2"],
+      ["Skills Match", `${currentReview.skillsScore}%`, "#059669"]
+    ].forEach(([label, value, color]) => {
+      const card = document.createElement("div");
+      card.style.cssText = "border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; flex: 1; text-align: center;";
 
-      <div style="margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 10px; text-align: center; color: #94a3b8; font-size: 10px;">
-        Reports powered by CV Genius AI Reviewer. Keep editing to hit 100%!
-      </div>
-    `;
+      const heading = document.createElement("h4");
+      heading.style.cssText = "margin: 0 0 5px 0; color: #64748b; font-size: 11px; text-transform: uppercase;";
+      heading.textContent = label;
+
+      const span = document.createElement("span");
+      span.style.cssText = `font-size: 28px; font-weight: 800; color: ${color};`;
+      span.textContent = value;
+
+      card.append(heading, span);
+      scoreBox.appendChild(card);
+    });
+
+    element.appendChild(scoreBox);
 
     // Download PDF
     html2pdf().set(opt).from(element).save();
