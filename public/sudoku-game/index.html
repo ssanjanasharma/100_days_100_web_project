@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sudoku</title>
+  <title>Sudoku - Minimalist Premium Game</title>
   <meta name="description"
     content="Play a clean, elegant, and minimalist Sudoku game. Features normal, medium, hard, and expert levels, notes, logic hints, and mistake checking.">
 
@@ -22,14 +22,7 @@
 
   <div class="app-container">
 
-    <!-- Top Resume Saved Game Banner -->
-    <div id="resume-banner" class="resume-banner handdrawn-box" style="display: none;">
-      <span>📓 Unfinished draft found! Resume where you left off?</span>
-      <div class="resume-actions">
-        <button id="resume-btn" class="paper-btn active-btn">📝 Resume</button>
-        <button id="discard-btn" class="paper-btn">🗑️ Discard</button>
-      </div>
-    </div>
+
 
     <!-- Header Section -->
     <header class="game-header">
@@ -185,24 +178,7 @@
         </div>
       </div>
 
-      <div class="footer-row utility-drawer">
-        <button id="leaderboard-btn" class="nav-btn">🏆 Records</button>
-        <button id="achievements-btn" class="nav-btn">🎖️ Badges</button>
-        <button id="stats-btn" class="nav-btn">📊 Heatmap & Stats</button>
-        <button id="import-export-btn" class="nav-btn">📦 Import / Export</button>
-        <button id="rules-btn" class="nav-btn">❓ Help</button>
-      </div>
-
-      <div class="footer-row settings-drawer">
-        <div class="setting-item" style="display: none;">
-          <label for="theme-select">Paper Style:</label>
-          <select id="theme-select" class="paper-input">
-            <option value="notebook">📖 Grid Notebook (B&W)</option>
-            <option value="chalkboard">🧮 Slate Chalkboard</option>
-            <option value="blueprint">📐 Sketchy Blueprint</option>
-            <option value="parchment">📜 Aged Parchment</option>
-          </select>
-        </div>
+      <div class="footer-row settings-row">
         <div class="setting-item checkbox-group">
           <label>
             <input type="checkbox" id="mistake-checking-toggle" checked> Mistake Check

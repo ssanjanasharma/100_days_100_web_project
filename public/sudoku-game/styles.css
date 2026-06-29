@@ -548,12 +548,40 @@ body {
   color: #4b5563;
 }
 
-/* Hide redundant details (drawers, spine bindings, chalkboard overrides) */
+/* Hide redundant details (drawers, spine bindings) */
 .notebook-spine,
 .ring,
-.utility-drawer,
-.settings-drawer {
+.utility-drawer {
   display: none !important;
+}
+
+/* Settings Checkboxes Row */
+.settings-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.checkbox-group {
+  display: flex;
+  gap: 20px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: #2563eb;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
 }
 
 /* Modal dialogs */

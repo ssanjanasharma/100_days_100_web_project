@@ -1,3 +1,7 @@
+/**
+ * Sudoku Engine
+ * Contains solving, generation, and AI Hint logic.
+ */
 (function(global) {
   'use strict';
 
