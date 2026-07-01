@@ -21,7 +21,7 @@ const COMPANY_QUESTIONS = [
     },
     testCase: {
       input: [[2, 7, 11, 15], 9],
-      runner: function(userFnStr) {
+      runner: function (userFnStr) {
         try {
           const fn = new Function('nums', 'target', userFnStr + '\nreturn twoSum(nums, target);');
           const res = fn([2, 7, 11, 15], 9);
@@ -29,7 +29,7 @@ const COMPANY_QUESTIONS = [
             return { success: true, message: "Test Case Passed! Input: [2,7,11,15], Target: 9 -> Output: " + JSON.stringify(res) };
           }
           return { success: false, error: "Test Case Failed. Expected: [0,1], Got: " + JSON.stringify(res) };
-        } catch(e) {
+        } catch (e) {
           return { success: false, error: "Runtime Error: " + e.message };
         }
       }
@@ -278,7 +278,7 @@ const state = {
 function trackDailyActivity() {
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 86400000).toDateString();
-  
+
   // Track this day in heatmap
   const dateKey = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   state.activityHistory[dateKey] = (state.activityHistory[dateKey] || 0) + 1;
@@ -311,11 +311,11 @@ const pageTitleEl = document.getElementById("page-title");
 navItems.forEach(item => {
   item.addEventListener("click", () => {
     const tabId = item.getAttribute("data-tab");
-    
+
     // Switch navigation states
     navItems.forEach(nav => nav.classList.remove("active"));
     item.classList.add("active");
-    
+
     // Switch views
     contentViews.forEach(view => view.classList.remove("active"));
     const activeView = document.getElementById(`view-${tabId}`);
@@ -333,7 +333,7 @@ navItems.forEach(item => {
 function onTabLoad(tabId) {
   trackDailyActivity();
   updateStreakDisplay();
-  
+
   if (tabId === "dashboard") {
     renderDashboard();
   } else if (tabId === "company-questions") {
@@ -376,7 +376,7 @@ if (state.theme === "light") {
 
 function compileMarkdown(text) {
   if (!text) return '<p class="empty-state-preview">Live preview will compile here as you type...</p>';
-  
+
   // Escape HTML tags to protect script execution and security alerts
   let html = text
     .replace(/&/g, "&amp;")
@@ -387,23 +387,23 @@ function compileMarkdown(text) {
   html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
   html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-  
+
   // Blockquotes
   html = html.replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>');
-  
+
   // Fenced Code blocks
   html = html.replace(/```(?:javascript|python|cpp|java)?([\s\S]*?)```/gm, '<pre><code>$1</code></pre>');
-  
+
   // Inline code tags
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  
+
   // Bold & Italic
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-  
+
   // Anchors / links
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-  
+
   // Bullet lists
   html = html.replace(/^\s*-\s*(.*$)/gim, '<li>$1</li>');
   // Group lists together in UL
@@ -427,18 +427,18 @@ function renderDashboard() {
   const totalDSA = DSA_CURRICULUM.reduce((sum, mod) => sum + mod.questions.length, 0);
   const solvedDSA = state.solvedQuestions.filter(id => id.startsWith("dsa-")).length;
   document.getElementById("dashboard-dsa-count").textContent = `${solvedDSA}/${totalDSA}`;
-  document.getElementById("dashboard-dsa-fill").style.width = `${totalDSA > 0 ? (solvedDSA/totalDSA)*100 : 0}%`;
+  document.getElementById("dashboard-dsa-fill").style.width = `${totalDSA > 0 ? (solvedDSA / totalDSA) * 100 : 0}%`;
 
   const companyQsList = getCompleteCompanyQuestions();
   const solvedCompany = companyQsList.filter(q => state.solvedQuestions.includes(q.id)).length;
   document.getElementById("dashboard-company-count").textContent = `${solvedCompany}/${companyQsList.length}`;
-  document.getElementById("dashboard-company-fill").style.width = `${companyQsList.length > 0 ? (solvedCompany/companyQsList.length)*100 : 0}%`;
+  document.getElementById("dashboard-company-fill").style.width = `${companyQsList.length > 0 ? (solvedCompany / companyQsList.length) * 100 : 0}%`;
 
   document.getElementById("dashboard-mock-count").textContent = state.mockHistory.length;
 
   const totalMasteredFlash = Object.values(state.flashcardSRS).filter(s => s === "gotit").length;
   document.getElementById("dashboard-flash-count").textContent = totalMasteredFlash;
-  
+
   // Activity Heatmap rendering
   renderActivityTiles();
 
@@ -455,16 +455,16 @@ function renderDashboard() {
 function renderActivityTiles() {
   const container = document.getElementById("streak-grid-tiles");
   container.innerHTML = "";
-  
+
   const today = new Date();
   const tilesCount = 371; // 53 weeks * 7 days
   const startDate = new Date(today.getTime() - (tilesCount - 1) * 86400000);
-  
+
   for (let i = 0; i < tilesCount; i++) {
     const current = new Date(startDate.getTime() + i * 86400000);
     const dateKey = current.toISOString().split("T")[0];
     const level = Math.min(state.activityHistory[dateKey] || 0, 3);
-    
+
     const tile = document.createElement("div");
     tile.className = "streak-tile";
     tile.setAttribute("data-level", level);
@@ -540,8 +540,8 @@ function renderRecentNotes() {
   listEl.innerHTML = "";
 
   // Sort notes by updated date
-  const sorted = [...state.notes].sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 3);
-  
+  const sorted = [...state.notes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 3);
+
   if (sorted.length === 0) {
     listEl.innerHTML = '<p class="subtext">No notes created yet. Open Notes Manager tab to write one!</p>';
     return;
@@ -566,7 +566,7 @@ function renderRecentNotes() {
 function drawDashboardCanvasChart() {
   const canvas = document.getElementById("dashboardChart");
   if (!canvas) return;
-  
+
   const ctx = canvas.getContext("2d");
   // Adjust resolutions for high DPI
   const rect = canvas.getBoundingClientRect();
@@ -576,10 +576,10 @@ function drawDashboardCanvasChart() {
 
   const w = rect.width;
   const h = 260;
-  
+
   // Clear
   ctx.clearRect(0, 0, w, h);
-  
+
   // Data: count solved questions per topic category
   const categories = ["Arrays", "Two Pointers", "Sliding Window", "Trees", "DP", "Design"];
   const totalCounts = [5, 4, 3, 4, 3, 2]; // Standard ratios
@@ -605,14 +605,14 @@ function drawDashboardCanvasChart() {
   ctx.lineWidth = 1;
   ctx.fillStyle = state.theme === "dark" ? "#6b7280" : "#4b5563";
   ctx.font = "10px sans-serif";
-  
+
   for (let i = 0; i <= 4; i++) {
     const yVal = paddingY + (graphH / 4) * i;
     ctx.beginPath();
     ctx.moveTo(paddingX, yVal);
     ctx.lineTo(w - paddingX, yVal);
     ctx.stroke();
-    
+
     // Label
     const valueRepresented = 4 - i;
     ctx.fillText(valueRepresented.toString(), paddingX - 18, yVal + 3);
@@ -624,7 +624,7 @@ function drawDashboardCanvasChart() {
     const maxVal = Math.max(totalCounts[idx], 1);
     const solvedVal = solvedCounts[idx];
     const valPercent = solvedVal / maxVal;
-    
+
     const barHeight = Math.max(5, graphH * valPercent);
     const cy = paddingY + graphH - barHeight;
 
@@ -636,7 +636,7 @@ function drawDashboardCanvasChart() {
     const grad = ctx.createLinearGradient(cx, cy, cx, cy + barHeight);
     grad.addColorStop(0, '#8b5cf6');
     grad.addColorStop(1, '#ec4899');
-    
+
     ctx.fillStyle = grad;
     // Rounded bar top
     ctx.beginPath();
@@ -675,7 +675,7 @@ function renderCompanies() {
   companiesList.forEach(comp => {
     const totalQs = allQs.filter(q => q.company === comp).length;
     const solvedCount = allQs.filter(q => q.company === comp && state.solvedQuestions.includes(q.id)).length;
-    
+
     const card = document.createElement("div");
     card.className = "company-card";
     card.innerHTML = `
@@ -699,7 +699,7 @@ function showCompanyQuestions(company) {
   companySelectionScreen.classList.add("hidden");
   companyQuestionsDetailScreen.classList.remove("hidden");
   document.getElementById("selected-company-title").textContent = `${company} Questions`;
-  
+
   // Render filters and list
   filterCompanyQuestions();
 }
@@ -718,13 +718,13 @@ function filterCompanyQuestions() {
   const status = document.getElementById("company-q-status").value;
 
   const allQs = getCompleteCompanyQuestions().filter(q => q.company === activeCompany);
-  
+
   const filtered = allQs.filter(q => {
     const matchesSearch = q.name.toLowerCase().includes(query) || q.category.toLowerCase().includes(query);
     const matchesDiff = difficulty === "all" || q.difficulty === difficulty;
-    const matchesStatus = status === "all" || 
-                          (status === "solved" && state.solvedQuestions.includes(q.id)) ||
-                          (status === "unsolved" && !state.solvedQuestions.includes(q.id));
+    const matchesStatus = status === "all" ||
+      (status === "solved" && state.solvedQuestions.includes(q.id)) ||
+      (status === "unsolved" && !state.solvedQuestions.includes(q.id));
     return matchesSearch && matchesDiff && matchesStatus;
   });
 
@@ -745,7 +745,7 @@ function renderQuestionsTable(questions) {
   questions.forEach(q => {
     const isSolved = state.solvedQuestions.includes(q.id);
     const tr = document.createElement("tr");
-    
+
     tr.innerHTML = `
       <td>
         <input type="checkbox" class="checkbox-custom" ${isSolved ? "checked" : ""} disabled data-id="${q.id}">
@@ -796,16 +796,16 @@ let activeWorkspaceQuestion = null;
 function openCodingWorkspace(q) {
   activeWorkspaceQuestion = q;
   codingWorkspace.classList.remove("hidden");
-  
+
   document.getElementById("coding-question-title").textContent = `Solve: ${q.name}`;
   const diffEl = document.getElementById("coding-question-diff");
   diffEl.textContent = q.difficulty;
   diffEl.className = `badge ${q.difficulty.toLowerCase()}`;
   document.getElementById("coding-question-company").textContent = q.company;
-  
+
   document.getElementById("coding-question-desc").innerHTML = compileMarkdown(q.desc);
   document.getElementById("coding-question-examples").innerHTML = `<pre>${q.examples || "No examples loaded."}</pre>`;
-  
+
   const constraintsEl = document.getElementById("coding-question-constraints");
   constraintsEl.innerHTML = "";
   if (q.constraints) {
@@ -838,10 +838,10 @@ document.getElementById("btn-reset-code").addEventListener("click", loadCodeTemp
 function loadCodeTemplate() {
   if (!activeWorkspaceQuestion) return;
   const lang = document.getElementById("editor-lang-select").value;
-  const code = activeWorkspaceQuestion.starterCode && activeWorkspaceQuestion.starterCode[lang] 
+  const code = activeWorkspaceQuestion.starterCode && activeWorkspaceQuestion.starterCode[lang]
     ? activeWorkspaceQuestion.starterCode[lang]
     : `// Code template not available for ${lang}.\n// Feel free to draft your implementation here.`;
-  
+
   editorTextarea.value = code;
 }
 
@@ -868,10 +868,10 @@ function markActiveQuestionAsSolved() {
 // Run Simulation Terminal logic
 document.getElementById("btn-run-code").addEventListener("click", () => {
   if (!activeWorkspaceQuestion) return;
-  
+
   const lang = document.getElementById("editor-lang-select").value;
   const userCode = editorTextarea.value;
-  
+
   terminalOutput.innerHTML = '<span class="stdout-msg">Running tests...</span>';
 
   setTimeout(() => {
@@ -888,18 +888,44 @@ document.getElementById("btn-run-code").addEventListener("click", () => {
         // Fallback Javascript check
         try {
           new Function(userCode);
-          terminalOutput.innerHTML = `<span class="success-msg">✓ Syntax Valid: Code parsed correctly, no execution test cases bound.</span>`;
-        } catch(e) {
-          terminalOutput.innerHTML = `<span class="error-msg">✗ Compiler Syntax Error: ${e.message}</span>`;
+          terminalOutput.replaceChildren();
+
+          const msg = document.createElement("span");
+          msg.className = "success-msg";
+          msg.textContent = "✓ Syntax Valid: Code parsed correctly, no execution test cases bound.";
+
+          terminalOutput.appendChild(msg);
+        } catch (e) {
+          terminalOutput.replaceChildren();
+
+          const msg = document.createElement("span");
+          msg.className = "error-msg";
+          msg.textContent = `✗ Compiler Syntax Error: ${e.message}`;
+
+          terminalOutput.appendChild(msg);
         }
       }
     } else {
       // Python, C++, Java Mock compilers
-      terminalOutput.innerHTML = `
-        <span class="stdout-msg">Simulating compiler pipeline for static ${lang.toUpperCase()} source...</span><br>
-        <span class="success-msg">✓ Success: Compiled with code analyzer (0 Warnings).</span><br>
-        <span class="stdout-msg">Run tests completed successfully. (Mock evaluation completed)</span>
-      `;
+      terminalOutput.replaceChildren();
+
+      const line1 = document.createElement("span");
+      line1.className = "stdout-msg";
+      line1.textContent = `Simulating compiler pipeline for static ${lang.toUpperCase()} source...`;
+
+      const br1 = document.createElement("br");
+
+      const line2 = document.createElement("span");
+      line2.className = "success-msg";
+      line2.textContent = "✓ Success: Compiled with code analyzer (0 Warnings).";
+
+      const br2 = document.createElement("br");
+
+      const line3 = document.createElement("span");
+      line3.className = "stdout-msg";
+      line3.textContent = "Run tests completed successfully. (Mock evaluation completed)";
+
+      terminalOutput.append(line1, br1, line2, br2, line3);
     }
   }, 400);
 });
@@ -907,14 +933,14 @@ document.getElementById("btn-run-code").addEventListener("click", () => {
 // Submit code
 document.getElementById("btn-submit-code").addEventListener("click", () => {
   if (!activeWorkspaceQuestion) return;
-  
+
   const lang = document.getElementById("editor-lang-select").value;
   const userCode = editorTextarea.value;
-  
+
   // Validate code correctness
   let isValid = false;
   let errorMessage = "";
-  
+
   if (lang === "javascript") {
     if (activeWorkspaceQuestion.testCase && activeWorkspaceQuestion.testCase.runner) {
       const testResult = activeWorkspaceQuestion.testCase.runner(userCode);
@@ -925,8 +951,8 @@ document.getElementById("btn-submit-code").addEventListener("click", () => {
       }
     } else {
       // Check if user changed the template code
-      const template = activeWorkspaceQuestion.starterCode && activeWorkspaceQuestion.starterCode.javascript 
-        ? activeWorkspaceQuestion.starterCode.javascript.trim() 
+      const template = activeWorkspaceQuestion.starterCode && activeWorkspaceQuestion.starterCode.javascript
+        ? activeWorkspaceQuestion.starterCode.javascript.trim()
         : "";
       if (userCode.trim() === template) {
         errorMessage = "Please write code before submitting.";
@@ -934,7 +960,7 @@ document.getElementById("btn-submit-code").addEventListener("click", () => {
         try {
           new Function(userCode);
           isValid = true;
-        } catch(e) {
+        } catch (e) {
           errorMessage = `Syntax Error: ${e.message}`;
         }
       }
@@ -950,14 +976,21 @@ document.getElementById("btn-submit-code").addEventListener("click", () => {
       isValid = true;
     }
   }
-  
+
   if (!isValid) {
     alert(errorMessage || "Please write the correct code before submitting.");
     // Show in terminal too
-    terminalOutput.innerHTML = `<span class="error-msg">✗ SUBMISSION BLOCKED: ${errorMessage || "Invalid code structure."}</span>`;
+    terminalOutput.replaceChildren();
+
+    const errorSpan = document.createElement("span");
+    errorSpan.className = "error-msg";
+    errorSpan.textContent =
+      `✗ SUBMISSION BLOCKED: ${errorMessage || "Invalid code structure."}`;
+
+    terminalOutput.appendChild(errorSpan);
     return;
   }
-  
+
   // Save solved state
   if (!state.solvedQuestions.includes(activeWorkspaceQuestion.id)) {
     state.solvedQuestions.push(activeWorkspaceQuestion.id);
@@ -969,7 +1002,7 @@ document.getElementById("btn-submit-code").addEventListener("click", () => {
 
   // Close overlay
   codingWorkspace.classList.add("hidden");
-  
+
   // Reload
   if (activeCompany) showCompanyQuestions(activeCompany);
   renderDashboard();
@@ -1000,7 +1033,7 @@ function closeModal() {
 
 customForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  
+
   const name = document.getElementById("custom-q-name").value;
   const company = document.getElementById("custom-q-company").value;
   const difficulty = document.getElementById("custom-q-difficulty").value;
@@ -1023,7 +1056,7 @@ customForm.addEventListener("submit", (e) => {
 
   state.customQuestions.push(newQ);
   saveState("customQuestions");
-  
+
   closeModal();
   renderCompanies();
 });
@@ -1039,12 +1072,12 @@ let activeDSATopicId = "dsa-arrays";
 
 function renderDSATracker() {
   dsaTopicsListContainer.innerHTML = "";
-  
+
   DSA_CURRICULUM.forEach(topic => {
     const solvedCount = topic.questions.filter(q => state.solvedQuestions.includes(q.id)).length;
     const isActive = topic.id === activeDSATopicId;
-    const percent = topic.questions.length > 0 ? Math.round((solvedCount/topic.questions.length)*100) : 0;
-    
+    const percent = topic.questions.length > 0 ? Math.round((solvedCount / topic.questions.length) * 100) : 0;
+
     const btn = document.createElement("button");
     btn.className = `dsa-topic-btn ${isActive ? "active" : ""}`;
     btn.innerHTML = `
@@ -1056,12 +1089,12 @@ function renderDSATracker() {
         <div class="fill" style="width: ${percent}%"></div>
       </div>
     `;
-    
+
     btn.addEventListener("click", () => {
       activeDSATopicId = topic.id;
       renderDSATracker();
     });
-    
+
     dsaTopicsListContainer.appendChild(btn);
   });
 
@@ -1071,10 +1104,10 @@ function renderDSATracker() {
     document.getElementById("dsa-topic-title").textContent = topicData.title;
     document.getElementById("dsa-topic-description").textContent = topicData.desc;
     document.getElementById("dsa-cheat-content").textContent = topicData.cheatSheet;
-    
+
     const solvedCount = topicData.questions.filter(q => state.solvedQuestions.includes(q.id)).length;
     document.getElementById("dsa-topic-progress-text").textContent = `${solvedCount} / ${topicData.questions.length} solved`;
-    const percent = topicData.questions.length > 0 ? (solvedCount/topicData.questions.length)*100 : 0;
+    const percent = topicData.questions.length > 0 ? (solvedCount / topicData.questions.length) * 100 : 0;
     document.getElementById("dsa-topic-progress-fill").style.width = `${percent}%`;
 
     // Render Checklist
@@ -1151,7 +1184,7 @@ let activeFolder = "all";
 
 function renderNotesManager() {
   notesRecordsContainer.innerHTML = "";
-  
+
   const filteredNotes = state.notes.filter(note => {
     return activeFolder === "all" || note.folder === activeFolder;
   });
@@ -1178,7 +1211,7 @@ function renderNotesManager() {
     if (currentNote) {
       noteEditorWrapper.classList.remove("hidden");
       noteEditorEmptyState.classList.add("hidden");
-      
+
       // Stop listeners loop temporarily
       noteTitleField.value = currentNote.title;
       noteFolderSelect.value = currentNote.folder;
@@ -1224,11 +1257,11 @@ document.getElementById("btn-save-note").addEventListener("click", () => {
     currentNote.folder = noteFolderSelect.value;
     currentNote.content = noteMarkdownTextarea.value;
     currentNote.updatedAt = new Date().toISOString();
-    
+
     saveState("notes");
     trackDailyActivity();
     renderNotesManager();
-    
+
     // Toast indicator style
     const btn = document.getElementById("btn-save-note");
     btn.textContent = "✓ Saved!";
@@ -1245,7 +1278,7 @@ function createNewNote() {
     content: "# New Note\n\nStart typing note details here using markdown...",
     updatedAt: new Date().toISOString()
   };
-  
+
   state.notes.push(newNote);
   saveState("notes");
   activeNoteId = newNote.id;
@@ -1270,7 +1303,7 @@ document.getElementById("btn-delete-note").addEventListener("click", () => {
 document.getElementById("note-search-input").addEventListener("input", (e) => {
   const query = e.target.value.toLowerCase();
   const notesListItems = document.querySelectorAll(".note-record-item");
-  
+
   state.notes.forEach((note, idx) => {
     const el = notesListItems[idx];
     if (el) {
@@ -1317,19 +1350,19 @@ let activeCardIndex = 0;
 
 function renderFlashcardDecks() {
   deckSidebarEl.innerHTML = "";
-  
+
   Object.keys(FLASHCARDS_DECKS).forEach(key => {
     const deck = FLASHCARDS_DECKS[key];
     const totalCards = deck.cards.length;
     const isActive = key === activeDeckId;
-    
+
     const btn = document.createElement("div");
     btn.className = `deck-select-btn ${isActive ? "active" : ""}`;
     btn.innerHTML = `
       <strong>${deck.name}</strong>
       <span class="deck-card-count">${totalCards} cards</span>
     `;
-    
+
     btn.addEventListener("click", () => {
       activeDeckId = key;
       activeCardIndex = 0;
@@ -1338,7 +1371,7 @@ function renderFlashcardDecks() {
       actionBarEl.classList.remove("hidden");
       renderFlashcardDecks();
     });
-    
+
     deckSidebarEl.appendChild(btn);
   });
 
@@ -1350,7 +1383,7 @@ function renderActiveFlashcard() {
   if (!deck || deck.cards.length === 0) return;
 
   const card = deck.cards[activeCardIndex];
-  
+
   document.getElementById("arena-deck-name").textContent = deck.name;
   document.getElementById("arena-deck-counter").textContent = `Card ${activeCardIndex + 1} of ${deck.cards.length}`;
 
@@ -1368,7 +1401,7 @@ document.getElementById("btn-flip-card").addEventListener("click", flipCard);
 function flipCard() {
   cardInnerEl.classList.toggle("flipped");
   const isFlipped = cardInnerEl.classList.contains("flipped");
-  
+
   if (isFlipped) {
     ratingBarEl.classList.remove("hidden");
     actionBarEl.classList.add("hidden");
@@ -1389,7 +1422,7 @@ ratingBtns.forEach(btn => {
     // Store card SRS status
     state.flashcardSRS[card.id] = srsLevel;
     saveState("flashcardSRS");
-    
+
     trackDailyActivity();
 
     // Reset card class flip and load next
@@ -1437,8 +1470,8 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
-  
-  recognition.onresult = function(event) {
+
+  recognition.onresult = function (event) {
     let finalTranscript = '';
     for (let i = event.resultIndex; i < event.results.length; ++i) {
       if (event.results[i].isFinal) {
@@ -1451,12 +1484,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     }
   };
 
-  recognition.onerror = function(event) {
+  recognition.onerror = function (event) {
     console.error("Speech Recognition Error", event.error);
     stopSpeechRecognition();
   };
 
-  recognition.onend = function() {
+  recognition.onend = function () {
     stopSpeechRecognition();
   };
 } else {
@@ -1477,7 +1510,7 @@ function startSpeechRecognition() {
     document.getElementById("speech-live-status").className = "speech-dictation-live-tag recording";
     document.getElementById("btn-speech-text").textContent = "Stop Dictation";
     document.getElementById("avatar-waveform").className = "waveform active";
-  } catch(e) {
+  } catch (e) {
     console.error(e);
   }
 }
@@ -1491,7 +1524,7 @@ function stopSpeechRecognition() {
     document.getElementById("speech-live-status").className = "speech-dictation-live-tag";
     document.getElementById("btn-speech-text").textContent = "Start Speech Dictation";
     document.getElementById("avatar-waveform").className = "waveform";
-  } catch(e) {
+  } catch (e) {
     // Ignore duplicate stop calls
   }
 }
@@ -1522,15 +1555,15 @@ document.getElementById("btn-start-mock").addEventListener("click", () => {
   const durationType = document.getElementById("mock-duration").value;
 
   const totalQuestions = durationType === "5" ? 1 : (durationType === "15" ? 2 : 3);
-  
+
   // Select random subset of questions
   const pool = MOCK_QUESTIONS[mockTrack];
   mockQuestionsList = [...pool].sort(() => 0.5 - Math.random()).slice(0, totalQuestions);
-  
+
   activeMockQuestionIndex = 0;
   mockSecondsElapsed = 0;
   mockAnswersSaved = [];
-  
+
   // Transition screens
   mockSetupEl.classList.add("hidden");
   mockRoomEl.classList.remove("hidden");
@@ -1591,7 +1624,7 @@ document.getElementById("btn-submit-answer").addEventListener("click", () => {
     document.getElementById("btn-submit-answer").style.display = "none";
     const nextBtn = document.getElementById("btn-next-mock-q");
     nextBtn.style.display = "block";
-    
+
     document.getElementById("interviewer-speech").innerHTML = `Excellent. I've logged your response. Click "Next Question" to proceed when you are ready.`;
   } else {
     // End session evaluate
@@ -1611,25 +1644,25 @@ document.getElementById("btn-next-mock-q").addEventListener("click", () => {
 function triggerMockEvaluation() {
   mockRoomEl.classList.add("hidden");
   mockReportEl.classList.remove("hidden");
-  
+
   // Set report titles
   document.getElementById("report-meta-details").textContent = `Track: ${mockTrack.toUpperCase()} | Company Style: ${mockCompanyStyle} | Time: ${Math.round(mockSecondsElapsed / 60)} minutes`;
 
   let totalStruct = 0;
   let totalVocab = 0;
   let totalComplete = 0;
-  
+
   const recommendations = [];
 
   // Evaluate each answer using keyword metrics
   mockAnswersSaved.forEach((item, idx) => {
     const len = item.answer.length;
     const lower = item.answer.toLowerCase();
-    
+
     let structScore = 50;
     let vocabScore = 50;
     let completeScore = Math.min(100, Math.floor(len / 8)); // longer answers count as complete up to limits
-    
+
     // Check Track-Specific Keywords
     if (mockTrack === "behavioral") {
       // STAR
@@ -1637,7 +1670,7 @@ function triggerMockEvaluation() {
       const task = lower.includes("task") || lower.includes("goal") || lower.includes("challenged");
       const act = lower.includes("action") || lower.includes("implemented") || lower.includes("designed") || lower.includes("led");
       const res = lower.includes("result") || lower.includes("metric") || lower.includes("%") || lower.includes("improved");
-      
+
       let starHits = 0;
       if (sit) starHits++;
       if (task) starHits++;
@@ -1645,7 +1678,7 @@ function triggerMockEvaluation() {
       if (res) starHits++;
 
       structScore = 60 + (starHits * 10);
-      
+
       const leadershipWords = ["ownership", "bias for action", "customer", "dive deep", "deliver", "frugality"];
       let leaderHits = leadershipWords.filter(w => lower.includes(w)).length;
       vocabScore = 70 + (leaderHits * 8);
@@ -1653,7 +1686,7 @@ function triggerMockEvaluation() {
       const O1 = lower.includes("o(1)") || lower.includes("constant time");
       const ON = lower.includes("o(n)") || lower.includes("linear time");
       const OlogN = lower.includes("o(log") || lower.includes("logarithmic");
-      
+
       const optimize = lower.includes("hash map") || lower.includes("pointer") || lower.includes("queue") || lower.includes("stack") || lower.includes("space complexity");
 
       structScore = (O1 || ON || OlogN) ? 90 : 60;
@@ -1663,7 +1696,7 @@ function triggerMockEvaluation() {
       const cache = lower.includes("cache") || lower.includes("redis") || lower.includes("cdn");
       const balance = lower.includes("balancer") || lower.includes("scale") || lower.includes("routing");
       const db = lower.includes("sharding") || lower.includes("index") || lower.includes("replica") || lower.includes("nosql");
-      
+
       let designHits = 0;
       if (cache) designHits++;
       if (balance) designHits++;
@@ -1707,9 +1740,9 @@ function triggerMockEvaluation() {
   // Render evaluations
   const notesContainer = document.getElementById("report-evaluator-notes");
   notesContainer.innerHTML = "";
-  
+
   const bulletUl = document.createElement("ul");
-  
+
   if (structFinal < 80) {
     bulletUl.innerHTML += `<li>⚠️ **Response Structure**: Your answers could benefit from a clearer organizational framework. Try referencing core components explicitly (e.g. STAR segments, system building blocks).</li>`;
   } else {
@@ -1740,7 +1773,7 @@ function triggerMockEvaluation() {
 
   state.mockHistory.push(sessionRecord);
   saveState("mockHistory");
-  
+
   // Track activity
   trackDailyActivity();
   renderDashboard();
@@ -1756,7 +1789,7 @@ document.getElementById("btn-quit-mock").addEventListener("click", () => {
   if (confirm("Are you sure you want to quit the active session? All progress on this session will be lost.")) {
     clearInterval(mockTimerInterval);
     stopSpeechRecognition();
-    
+
     mockSetupEl.classList.remove("hidden");
     mockRoomEl.classList.add("hidden");
     mockReportEl.classList.add("hidden");
