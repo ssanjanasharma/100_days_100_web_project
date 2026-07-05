@@ -80,7 +80,7 @@ function playSound(type) {
     if (ctx.state === 'suspended') {
       ctx.resume();
     }
-    
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
@@ -148,7 +148,7 @@ function loadFromLocalStorage() {
       console.error("Failed loading stats:", e);
     }
   }
-  
+
   const savedAchievements = localStorage.getItem('crossword_quest_achievements');
   if (savedAchievements) {
     try {
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderAchievements();
   updateDashboardStats();
   loadPuzzleDatabase();
-  
+
   // Try loading auto-save if exists
   const autoSaved = localStorage.getItem('crossword_quest_autosave');
   if (autoSaved) {
@@ -232,7 +232,7 @@ function switchTab(tabId) {
   if (activePanel) {
     activePanel.classList.add("active");
   }
-  
+
   // Re-adjust nav items if clicked outside sidebar
   document.querySelectorAll(".nav-item").forEach(i => {
     if (i.getAttribute("data-tab") === tabId) {
@@ -265,13 +265,13 @@ function setTheme(theme) {
 function setupAudioBtn() {
   const btn = document.getElementById("audio-toggle-btn");
   const icon = document.getElementById("audio-icon");
-  
+
   // Restore
   const saved = localStorage.getItem('crossword_quest_audio');
   if (saved !== null) {
     soundEnabled = saved === 'true';
   }
-  
+
   updateAudioIcon();
 
   btn.addEventListener("click", () => {
@@ -295,7 +295,7 @@ function updateAudioIcon() {
 function setupHintDropdown() {
   const btn = document.getElementById("hint-dropdown-btn");
   const menu = document.getElementById("hint-menu");
-  
+
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     menu.classList.toggle("hidden");
@@ -311,7 +311,7 @@ function initDailyCountdown() {
   const countdownEl = document.getElementById("daily-countdown");
   const streakValEl = document.getElementById("daily-streak-val");
   const headerStreakEl = document.getElementById("header-streak");
-  
+
   // Set streak values
   streakValEl.textContent = `🔥 ${appStats.currentStreak}`;
   headerStreakEl.textContent = `🔥 ${appStats.currentStreak}`;
@@ -320,11 +320,11 @@ function initDailyCountdown() {
     const now = new Date();
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const diff = tomorrow - now; // ms
-    
+
     const hrs = Math.floor(diff / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
     const secs = Math.floor((diff % 60000) / 1000);
-    
+
     countdownEl.textContent = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }, 1000);
 }
@@ -375,7 +375,7 @@ function filterPuzzles() {
 function renderPuzzleList() {
   const container = document.getElementById("puzzles-container");
   const searchVal = document.getElementById("puzzle-search").value.toLowerCase();
-  
+
   container.innerHTML = "";
 
   const filtered = puzzleDatabase.filter(p => {
@@ -392,7 +392,7 @@ function renderPuzzleList() {
   filtered.forEach(p => {
     const card = document.createElement("div");
     card.className = "puzzle-card glass-card";
-    
+
     const isSolved = appStats.solvedPuzzlesList.includes(p.id);
     const progressPercent = isSolved ? 100 : 0; // Simple binary representation, or actual percentage if partially saved
 
@@ -425,7 +425,7 @@ function loadPuzzleById(id) {
   if (!p) {
     p = appStats.localLibrary.find(x => x.id === id);
   }
-  
+
   if (p) {
     loadPuzzle(p);
   }
@@ -436,27 +436,27 @@ function loadDailyChallenge() {
   // Select daily crossword based on today's calendar date seed
   const today = new Date();
   const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  
+
   if (puzzleDatabase.length === 0) return;
-  
+
   // Pick an index from database based on date seed
   const index = dateSeed % puzzleDatabase.length;
   const p = puzzleDatabase[index];
-  
+
   // Make a clone with a daily ID
   const dailyPuzzle = {
     ...p,
     id: `daily_${dateSeed}`,
     title: `Daily Challenge - ${today.toLocaleDateString()}`
   };
-  
+
   loadPuzzle(dailyPuzzle);
 }
 
 // Game Solver & Navigation Engine
 function loadPuzzle(puzzle, resetStats = true) {
   currentPuzzle = puzzle;
-  
+
   // Switch to game tab
   switchTab('game');
 
@@ -509,7 +509,7 @@ function loadPuzzle(puzzle, resetStats = true) {
     isPaused = false;
     updateStatsUI();
   }
-  
+
   // Start Game Timer
   startTimer();
 
@@ -528,7 +528,7 @@ function startTimer() {
     if (!isPaused) {
       secondsElapsed++;
       updateTimerDisplay();
-      
+
       // Auto-save progress every 5 seconds
       if (secondsElapsed % 5 === 0) {
         autoSaveProgress();
@@ -552,7 +552,7 @@ function updateStatsUI() {
 function renderGameBoard() {
   const container = document.getElementById("grid-container");
   container.innerHTML = "";
-  
+
   const size = currentPuzzle.gridSize;
   container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
 
@@ -566,7 +566,7 @@ function renderGameBoard() {
 
       if (cellData.playable) {
         cellEl.classList.add("playable");
-        
+
         // Render clue number label
         if (cellData.number > 0) {
           const numEl = document.createElement("span");
@@ -605,24 +605,40 @@ function renderCluesPanel() {
   const acrossContainer = document.getElementById("clues-across");
   const downContainer = document.getElementById("clues-down");
 
-  acrossContainer.innerHTML = "";
-  downContainer.innerHTML = "";
+  acrossContainer.replaceChildren();
+  downContainer.replaceChildren();
 
   currentPuzzle.clues.across.forEach(c => {
     const div = document.createElement("div");
     div.className = "clue-item";
     div.id = `clue-across-${c.number}`;
-    div.innerHTML = `<span class="clue-number">${c.number}.</span> <span class="clue-text">${c.clue}</span>`;
-    div.addEventListener("click", () => handleClueClick(c, 'across'));
+    const numberSpan = document.createElement("span");
+    numberSpan.className = "clue-number";
+    numberSpan.textContent = `${c.number}.`;
+
+    const clueSpan = document.createElement("span");
+    clueSpan.className = "clue-text";
+    clueSpan.textContent = c.clue;
+
+    div.replaceChildren(numberSpan, document.createTextNode(" "), clueSpan); div.addEventListener("click", () => handleClueClick(c, 'across'));
     acrossContainer.appendChild(div);
   });
 
-  currentPuzzle.clues.down.forEach(c => {
+  currentPuzzle.clues.down.forEach((c) => {
     const div = document.createElement("div");
     div.className = "clue-item";
     div.id = `clue-down-${c.number}`;
-    div.innerHTML = `<span class="clue-number">${c.number}.</span> <span class="clue-text">${c.clue}</span>`;
-    div.addEventListener("click", () => handleClueClick(c, 'down'));
+
+    const numberSpan = document.createElement("span");
+    numberSpan.className = "clue-number";
+    numberSpan.textContent = `${c.number}.`;
+
+    const clueSpan = document.createElement("span");
+    clueSpan.className = "clue-text";
+    clueSpan.textContent = c.clue;
+
+    div.replaceChildren(numberSpan, document.createTextNode(" "), clueSpan);
+    div.addEventListener("click", () => handleClueClick(c, "down"));
     downContainer.appendChild(div);
   });
 }
@@ -645,7 +661,7 @@ function focusFirstCell() {
 // Handle focus updates and active highlighting
 function handleCellFocus(row, col) {
   if (isPaused) return;
-  
+
   const cell = currentGrid[row][col];
   if (!cell.playable) return;
 
@@ -732,7 +748,7 @@ function updateHighlights() {
 function handleClueClick(clue, direction) {
   activeDirection = direction;
   activeCell = { row: clue.row, col: clue.col };
-  
+
   const input = document.querySelector(`.grid-cell[data-row="${clue.row}"][data-col="${clue.col}"] .cell-input`);
   if (input) {
     input.focus();
@@ -761,7 +777,7 @@ function handleCellInput(row, col, event) {
 function moveFocus(offset) {
   if (!activeCell) return;
   const currentClue = activeDirection === 'across' ? currentGrid[activeCell.row][activeCell.col].acrossClue : currentGrid[activeCell.row][activeCell.col].downClue;
-  
+
   if (!currentClue) return;
 
   const row = activeCell.row;
@@ -794,7 +810,7 @@ function handleCellKeyDown(row, col, event) {
   if (isPaused) return;
 
   const key = event.key;
-  
+
   if (key === 'ArrowRight') {
     event.preventDefault();
     moveGridSelection(0, 1);
@@ -904,7 +920,7 @@ function togglePause() {
 function restartCurrentPuzzle() {
   if (!currentPuzzle) return;
   playSound('click');
-  
+
   for (let r = 0; r < currentPuzzle.gridSize; r++) {
     for (let c = 0; c < currentPuzzle.gridSize; c++) {
       if (currentGrid[r][c].playable) {
@@ -953,7 +969,7 @@ function checkCurrentAnswers() {
   } else {
     playSound('success');
   }
-  
+
   checkWinCondition();
 }
 
@@ -989,11 +1005,11 @@ function revealLetter() {
     cell.value = cell.correctChar;
     const input = document.querySelector(`.grid-cell[data-row="${activeCell.row}"][data-col="${activeCell.col}"] .cell-input`);
     if (input) input.value = cell.correctChar;
-    
+
     // Clear marks and mark correct
     const cellEl = document.querySelector(`.grid-cell[data-row="${activeCell.row}"][data-col="${activeCell.col}"]`);
     cellEl.className = "grid-cell playable correct-mark";
-    
+
     hintsUsedCount++;
     updateStatsUI();
     playSound('success');
@@ -1005,19 +1021,19 @@ function revealWord() {
   if (!activeCell) return;
   const cell = currentGrid[activeCell.row][activeCell.col];
   const clue = activeDirection === 'across' ? cell.acrossClue : cell.downClue;
-  
+
   if (!clue) return;
 
   for (let i = 0; i < clue.answer.length; i++) {
     const r = activeDirection === 'across' ? clue.row : clue.row + i;
     const c = activeDirection === 'across' ? clue.col + i : clue.col;
-    
+
     const targetCell = currentGrid[r][c];
     targetCell.value = targetCell.correctChar;
-    
+
     const input = document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"] .cell-input`);
     if (input) input.value = targetCell.correctChar;
-    
+
     const cellEl = document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
     cellEl.className = "grid-cell playable correct-mark";
   }
@@ -1083,9 +1099,9 @@ function checkWinCondition() {
 function handleVictory(correctCount, totalPlayable) {
   if (timerInterval) clearInterval(timerInterval);
   if (raceInterval) clearInterval(raceInterval);
-  
+
   playSound('fanfare');
-  
+
   // Confetti burst
   try {
     confetti({
@@ -1093,21 +1109,21 @@ function handleVictory(correctCount, totalPlayable) {
       spread: 80,
       origin: { y: 0.6 }
     });
-  } catch(e) {}
+  } catch (e) { }
 
   // Save records and stats
   const accuracy = Math.round((correctCount / (correctCount + mistakesCount)) * 100) || 0;
-  
+
   // Record solve details in history
   appStats.solvedCount++;
-  
+
   // Manage Streak
   const todayStr = new Date().toDateString();
   if (appStats.lastSolvedDate) {
     const lastDate = new Date(appStats.lastSolvedDate);
     const diffTime = Math.abs(new Date(todayStr) - lastDate);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 1) {
       appStats.currentStreak++;
     } else if (diffDays > 1) {
@@ -1133,17 +1149,17 @@ function handleVictory(correctCount, totalPlayable) {
   }
 
   saveStats();
-  
+
   // Award Check Achievements
   const unlockedNow = checkAchievementsAwards(accuracy);
-  
+
   // Clear Auto-save since solved
   localStorage.removeItem('crossword_quest_autosave');
 
   // Trigger Victory Modal overlay
   const mins = Math.floor(secondsElapsed / 60);
   const secs = secondsElapsed % 60;
-  
+
   document.getElementById("victory-puzzle-title").textContent = currentPuzzle.title;
   document.getElementById("victory-time").textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   document.getElementById("victory-mistakes").textContent = mistakesCount;
@@ -1152,7 +1168,7 @@ function handleVictory(correctCount, totalPlayable) {
 
   const unlockedContainer = document.getElementById("victory-achievements");
   unlockedContainer.innerHTML = "";
-  
+
   unlockedNow.forEach(ach => {
     const card = document.createElement("div");
     card.className = "unlock-announce-card";
@@ -1168,7 +1184,7 @@ function handleVictory(correctCount, totalPlayable) {
 
   // Display modal
   document.getElementById("victory-modal").classList.remove("hidden");
-  
+
   // Refresh UI dashboards
   updateDashboardStats();
   renderAchievements();
@@ -1182,7 +1198,7 @@ function closeVictoryModal() {
 // Achievements checker
 function checkAchievementsAwards(accuracy) {
   const newlyUnlocked = [];
-  
+
   function unlock(id) {
     if (!unlockedAchievements.includes(id)) {
       unlockedAchievements.push(id);
@@ -1227,7 +1243,7 @@ function renderAchievements() {
     const unlocked = unlockedAchievements.includes(ach.id);
     const card = document.createElement("div");
     card.className = `badge-card glass-card ${unlocked ? 'unlocked' : ''}`;
-    
+
     card.innerHTML = `
       <div class="badge-icon">${ach.icon}</div>
       <div class="badge-details">
@@ -1242,7 +1258,7 @@ function renderAchievements() {
 // Update dashboard numeric indicators
 function updateDashboardStats() {
   document.getElementById("dash-solved").textContent = appStats.solvedCount;
-  
+
   const avgAcc = appStats.accuracyCount > 0 ? Math.round(appStats.accuracySum / appStats.accuracyCount) : 0;
   document.getElementById("dash-accuracy").textContent = `${avgAcc}%`;
 
@@ -1258,18 +1274,18 @@ function updateDashboardStats() {
 // Multiplayer race simulation
 function startMultiplayerRace() {
   if (puzzleDatabase.length === 0) return;
-  
+
   // Switch to board, select a random puzzle
   const randIndex = Math.floor(Math.random() * puzzleDatabase.length);
   const p = puzzleDatabase[randIndex];
-  
+
   loadPuzzle(p);
-  
+
   // Set race parameters
   isRaceMode = true;
   playerProgress = 0;
   botProgress = 0;
-  
+
   // Random bot speed coefficient (completes in roughly 120-240 seconds)
   botSpeed = 0.2 + Math.random() * 0.3; // percent step per tick
 
@@ -1302,10 +1318,10 @@ function updateRaceProgressUI() {
 function handleBotVictory() {
   if (raceInterval) clearInterval(raceInterval);
   if (timerInterval) clearInterval(timerInterval);
-  
+
   playSound('error');
   alert("🤖 The Bot has completed the puzzle first! Better speed next race!");
-  
+
   isRaceMode = false;
   document.getElementById("race-progress").classList.add("hidden");
   switchTab('dashboard');
@@ -1316,16 +1332,16 @@ function downloadPDF() {
   playSound('click');
   const { jsPDF } = window.jspdf;
   const boardArea = document.getElementById("printable-board-area");
-  
+
   html2canvas(boardArea, { backgroundColor: null }).then(canvas => {
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF('p', 'mm', 'a4');
-    
+
     // Add header title
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(22);
     pdf.text(currentPuzzle.title, 20, 25);
-    
+
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(12);
     pdf.text(`Difficulty: ${currentPuzzle.difficulty}  |  Category: ${currentPuzzle.category}`, 20, 32);
@@ -1342,7 +1358,7 @@ function downloadPDF() {
     pdf.text("Across Clues", 20, yPos);
     pdf.setFontSize(11);
     pdf.setFont("helvetica", "normal");
-    
+
     yPos += 8;
     currentPuzzle.clues.across.forEach(c => {
       if (yPos > 280) { pdf.addPage(); yPos = 20; }
@@ -1357,7 +1373,7 @@ function downloadPDF() {
     pdf.text("Down Clues", 20, yPos);
     pdf.setFontSize(11);
     pdf.setFont("helvetica", "normal");
-    
+
     yPos += 8;
     currentPuzzle.clues.down.forEach(c => {
       if (yPos > 280) { pdf.addPage(); yPos = 20; }
@@ -1404,7 +1420,7 @@ function renderLeaderboard() {
 
   list.forEach((rec, idx) => {
     const tr = document.createElement("tr");
-    
+
     const mins = Math.floor(rec.time / 60);
     const secs = rec.time % 60;
     const rankLabel = idx < 3 ? `<span class="rank-badge rank-${idx + 1}">${idx + 1}</span>` : idx + 1;
@@ -1436,7 +1452,7 @@ function renderCommunityLibrary() {
   list.forEach(p => {
     const card = document.createElement("div");
     card.className = "puzzle-card glass-card";
-    
+
     card.innerHTML = `
       <div class="puzzle-meta">
         <span class="badge">${p.difficulty}</span>
@@ -1473,11 +1489,11 @@ function importPuzzleFile(event) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     try {
       const imported = JSON.parse(e.target.result);
       const list = Array.isArray(imported) ? imported : [imported];
-      
+
       list.forEach(p => {
         // Validate keys briefly
         if (p.id && p.title && p.clues && p.gridSize) {
@@ -1492,7 +1508,7 @@ function importPuzzleFile(event) {
       renderCommunityLibrary();
       playSound('success');
       alert("✅ Custom puzzles imported successfully into Local Library!");
-    } catch(err) {
+    } catch (err) {
       playSound('error');
       alert("❌ Invalid JSON file structure.");
     }
@@ -1506,10 +1522,10 @@ let statsCategoryChart = null;
 
 function renderStatsCharts() {
   // Update Gameplay metrics tables
-  const easySolved = appStats.solvedPuzzlesList.filter(id => id.includes("easy") || (puzzleDatabase.find(p=>p.id === id) && puzzleDatabase.find(p=>p.id === id).difficulty === 'easy')).length;
-  const medSolved = appStats.solvedPuzzlesList.filter(id => id.includes("medium") || (puzzleDatabase.find(p=>p.id === id) && puzzleDatabase.find(p=>p.id === id).difficulty === 'medium')).length;
-  const hardSolved = appStats.solvedPuzzlesList.filter(id => id.includes("hard") || (puzzleDatabase.find(p=>p.id === id) && puzzleDatabase.find(p=>p.id === id).difficulty === 'hard')).length;
-  
+  const easySolved = appStats.solvedPuzzlesList.filter(id => id.includes("easy") || (puzzleDatabase.find(p => p.id === id) && puzzleDatabase.find(p => p.id === id).difficulty === 'easy')).length;
+  const medSolved = appStats.solvedPuzzlesList.filter(id => id.includes("medium") || (puzzleDatabase.find(p => p.id === id) && puzzleDatabase.find(p => p.id === id).difficulty === 'medium')).length;
+  const hardSolved = appStats.solvedPuzzlesList.filter(id => id.includes("hard") || (puzzleDatabase.find(p => p.id === id) && puzzleDatabase.find(p => p.id === id).difficulty === 'hard')).length;
+
   document.getElementById("table-solved-all").textContent = appStats.solvedCount;
   document.getElementById("table-solved-easy").textContent = easySolved;
   document.getElementById("table-solved-medium").textContent = medSolved;
@@ -1521,7 +1537,7 @@ function renderStatsCharts() {
   // Chart Solve History (Mock values representing progress over solved list or recent solving days)
   const ctxHistory = document.getElementById('chart-solve-history').getContext('2d');
   if (statsHistoryChart) statsHistoryChart.destroy();
-  
+
   const historyLabels = Array(Math.max(appStats.solvedCount, 5)).fill(0).map((_, i) => `Puzzle #${i + 1}`);
   const historyData = appStats.accuracyCount > 0 ? Array(appStats.solvedCount).fill(0).map(() => 80 + Math.floor(Math.random() * 20)) : [0, 0, 0, 0, 0];
 
@@ -1568,7 +1584,7 @@ function renderStatsCharts() {
 
   // Streak update stats tab
   document.getElementById("stats-streak-num").textContent = `🔥 ${appStats.currentStreak}`;
-  
+
   // Set streak milestones checkmarks
   const milestoneList = document.getElementById("streak-milestone-list");
   milestoneList.innerHTML = `
@@ -1595,9 +1611,9 @@ function generateAICrossword() {
     alert("Please enter a theme!");
     return;
   }
-  
+
   playSound('click');
-  
+
   // Simulated AI API layout synthesis
   // We mock the AI returning words based on user theme, then compile them dynamically
   setTimeout(() => {
@@ -1631,10 +1647,10 @@ function generateAICrossword() {
     }
 
     const compiled = compileWordsToCrosswordLayout(
-      `AI Generated: ${theme}`, 
-      'medium', 
-      theme, 
-      10, 
+      `AI Generated: ${theme}`,
+      'medium',
+      theme,
+      10,
       wordList
     );
 
@@ -1700,7 +1716,7 @@ function compileWordsToCrosswordLayout(title, difficulty, category, size, lines)
   const first = wordsList[0];
   const startRow = Math.floor(size / 2);
   const startCol = Math.floor((size - first.word.length) / 2);
-  
+
   for (let i = 0; i < first.word.length; i++) {
     grid[startRow][startCol + i] = first.word[i];
   }
@@ -1779,14 +1795,14 @@ function compileWordsToCrosswordLayout(title, difficulty, category, size, lines)
 
   // We scan the grid row-by-row, column-by-column to number cells
   const numberGrid = Array(size).fill(null).map(() => Array(size).fill(0));
-  
+
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       let needsNumber = false;
-      
+
       const acrossWord = placedWords.find(w => w.row === r && w.col === c && w.dir === 'across');
       const downWord = placedWords.find(w => w.row === r && w.col === c && w.dir === 'down');
-      
+
       if (acrossWord || downWord) {
         needsNumber = true;
       }
@@ -1843,7 +1859,7 @@ function isValidPlacement(grid, size, word, row, col, dir, pivotChar, pivotR, pi
     const currC = dir === 'across' ? col + i : col;
 
     const existing = grid[currR][currC];
-    
+
     // If cell contains character, it MUST match the word's letter
     if (existing !== '' && existing !== word[i]) {
       return false;
@@ -1893,7 +1909,7 @@ function renderCustomPreview(puzzle) {
   const container = document.getElementById("grid-preview");
   container.innerHTML = "";
   container.className = "crossword-grid";
-  
+
   const size = puzzle.gridSize;
   container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
 
@@ -1953,7 +1969,7 @@ function playCustomCrossword() {
 
 function saveCustomCrosswordToLibrary() {
   if (!customGeneratedPuzzle) return;
-  
+
   // Check duplicates
   if (!appStats.localLibrary.some(x => x.id === customGeneratedPuzzle.id)) {
     appStats.localLibrary.push(customGeneratedPuzzle);
