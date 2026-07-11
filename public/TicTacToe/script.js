@@ -1,3 +1,7 @@
+// =====================================
+// DOM REFERENCES
+// =====================================
+
 const board = document.getElementById("board");
 const statusText = document.getElementById("statusText");
 const turnChip = document.getElementById("turnChip");
@@ -17,348 +21,984 @@ const hintBtn = document.getElementById("hintBtn");
 const undoBtn = document.getElementById("undoBtn");
 const historyList = document.getElementById("historyList");
 const themeToggleGroup = document.getElementById("themeToggleGroup");
-const victorySound = new Audio("victory.mp3");
+const victorySound = new Audio("/public/TicTacToe/victory.mp3");
+const xMoveSound = new Audio("/public/TicTacToe/click-x.mp3");
+const oMoveSound = new Audio("/public/TicTacToe/click-o.mp3");
+const drawSound = new Audio("/public/TicTacToe/draw.mp3");
+
+// Statistics elements
+const statTotal = document.getElementById("statTotal");
+const statXWins = document.getElementById("statXWins");
+const statOWins = document.getElementById("statOWins");
+const statDraws = document.getElementById("statDraws");
+const statXRate = document.getElementById("statXRate");
+const statORate = document.getElementById("statORate");
+const statCurrentStreak = document.getElementById("statCurrentStreak");
+const statBestStreak = document.getElementById("statBestStreak");
+const progressX = document.getElementById("progressX");
+const progressO = document.getElementById("progressO");
+const progressD = document.getElementById("progressD");
+const progressXVal = document.getElementById("progressXVal");
+const progressOVal = document.getElementById("progressOVal");
+const progressDVal = document.getElementById("progressDVal");
+const resetStatsBtn = document.getElementById("resetStatsBtn");
+const confirmModal = document.getElementById("confirmModal");
+const confirmYes = document.getElementById("confirmYes");
+const confirmNo = document.getElementById("confirmNo");
+
+// =====================================
+// GAME VARIABLES
+// =====================================
 
 let gameBoard = Array(9).fill("");
+
 let currentPlayer = "X";
+
 let gameOver = false;
 let moveHistory = [];
-let scores = { X: 0, O: 0, D: 0 };
+
+let scores = {
+    X: 0,
+    O: 0,
+    D: 0
+};
+
+// =====================================
+// STATISTICS
+// =====================================
+
+const STORAGE_KEY = "ticTacToeStatistics";
+
+let statistics = {
+
+    totalGames: 0,
+
+    xWins: 0,
+
+    oWins: 0,
+
+    draws: 0,
+
+    currentStreak: 0,
+
+    bestStreak: 0,
+
+    lastWinner: null
+
+};
+
+function loadStatistics() {
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+
+        statistics = JSON.parse(saved);
+
+    }
+
+}
+
+function saveStatistics() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(statistics)
+    );
+
+}
+
+function createStatisticsDashboard() {
+
+    if (document.getElementById("statisticsPanel")) return;
+
+    const panel = document.createElement("section");
+
+    panel.className = "statistics-panel";
+
+    panel.id = "statisticsPanel";
+
+    panel.innerHTML = `
+
+<h2>📊 Statistics Dashboard</h2>
+
+<div class="stats-grid">
+
+<div class="stat-card">
+
+<span>Total Games</span>
+
+<strong id="statTotal">0</strong>
+
+</div>
+
+<div class="stat-card">
+
+<span>X Wins</span>
+
+<strong id="statX">0</strong>
+
+</div>
+
+<div class="stat-card">
+
+<span>O Wins</span>
+
+<strong id="statO">0</strong>
+
+</div>
+
+<div class="stat-card">
+
+<span>Draws</span>
+
+<strong id="statDraw">0</strong>
+
+</div>
+
+<div class="stat-card">
+
+<span>Current Streak</span>
+
+<strong id="statCurrent">0</strong>
+
+</div>
+
+<div class="stat-card">
+
+<span>Best Streak</span>
+
+<strong id="statBest">0</strong>
+
+</div>
+
+</div>
+
+<div class="progress-section">
+
+<div class="progress-item">
+
+<div class="progress-label">
+
+<span>Player X Win Rate</span>
+
+<span id="xRate">0%</span>
+
+</div>
+
+<div class="progress-bar">
+
+<div
+id="xProgress"
+class="progress-fill progress-x">
+
+</div>
+
+</div>
+
+</div>
+
+<div class="progress-item">
+
+<div class="progress-label">
+
+<span>Player O Win Rate</span>
+
+<span id="oRate">0%</span>
+
+</div>
+
+<div class="progress-bar">
+
+<div
+id="oProgress"
+class="progress-fill progress-o">
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<button
+class="btn-ghost"
+id="resetStatistics">
+
+Reset Statistics
+
+</button>
+
+`;
+
+    document.querySelector(".panel").appendChild(panel);
+
+}
+
+function updateStatisticsUI() {
+
+    document.getElementById("statTotal").textContent = statistics.totalGames;
+
+    document.getElementById("statX").textContent = statistics.xWins;
+
+    document.getElementById("statO").textContent = statistics.oWins;
+
+    document.getElementById("statDraw").textContent = statistics.draws;
+
+    document.getElementById("statCurrent").textContent = statistics.currentStreak;
+
+    document.getElementById("statBest").textContent = statistics.bestStreak;
+
+    const totalWins =
+        statistics.xWins +
+        statistics.oWins;
+
+    let xRate = 0;
+
+    let oRate = 0;
+
+    if (totalWins > 0) {
+
+        xRate = Math.round((statistics.xWins / totalWins) * 100);
+
+        oRate = Math.round((statistics.oWins / totalWins) * 100);
+
+    }
+
+    document.getElementById("xRate").textContent = xRate + "%";
+
+    document.getElementById("oRate").textContent = oRate + "%";
+
+    document.getElementById("xProgress").style.width = xRate + "%";
+
+    document.getElementById("oProgress").style.width = oRate + "%";
+
+}
+
+function resetStatistics() {
+
+    if (!confirm("Reset all statistics?")) return;
+
+    statistics = {
+
+        totalGames: 0,
+
+        xWins: 0,
+
+        oWins: 0,
+
+        draws: 0,
+
+        currentStreak: 0,
+
+        bestStreak: 0,
+
+        lastWinner: null
+
+    };
+
+    saveStatistics();
+
+    updateStatisticsUI();
+
+}
+
+loadStatistics();
+
+createStatisticsDashboard();
+
+updateStatisticsUI();
+// =====================================
+// WIN COMBINATIONS
+// =====================================
 
 const WIN_LINES = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
+
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+
+    [0, 4, 8],
+    [2, 4, 6]
+
 ];
 
+// =====================================
+// BOARD RENDER
+// =====================================
+
 function renderBoard() {
+
     board.innerHTML = "";
+
     gameBoard.forEach((value, index) => {
+
         const cell = document.createElement("button");
+
         cell.className = "cell";
-        if (value === "X") cell.classList.add("mark-x");
-        if (value === "O") cell.classList.add("mark-o");
+
+        if (value === "X") {
+
+            cell.classList.add("mark-x");
+
+        }
+
+        if (value === "O") {
+
+            cell.classList.add("mark-o");
+
+        }
+
         cell.textContent = value;
-        cell.addEventListener("click", () => { handleMove(index); });
+
+        cell.addEventListener("click", () => {
+
+            handleMove(index);
+
+        });
+
         board.appendChild(cell);
+
     });
+
 }
+
+// =====================================
+// STATUS
+// =====================================
+
+function updateStatus() {
+
+    statusText.textContent = currentPlayer + "'s Turn";
+
+    turnChip.textContent = "Turn: " + currentPlayer;
+
+}
+
+// =====================================
+// SCOREBOARD
+// =====================================
+
+function updateScores() {
+
+    scoreX.textContent = scores.X;
+
+    scoreO.textContent = scores.O;
+
+    scoreD.textContent = scores.D;
+
+}
+
+// =====================================
+// HISTORY
+// =====================================
+
+function updateHistory() {
+
+    historyList.innerHTML = "";
+
+    moveHistory.slice(-10).forEach(move => {
+
+        const li = document.createElement("li");
+
+        li.textContent = `${move.player} → Cell ${move.cell}`;
+
+        historyList.appendChild(li);
+
+    });
+
+}
+
+// =====================================
+// WINNER CHECK
+// =====================================
+
+function getWinner() {
+
+    for (const line of WIN_LINES) {
+
+        const [a, b, c] = line;
+
+        if (
+
+            gameBoard[a] &&
+
+            gameBoard[a] === gameBoard[b] &&
+
+            gameBoard[a] === gameBoard[c]
+
+        ) {
+
+            return line;
+
+        }
+
+    }
+
+    return null;
+
+}
+
+// =====================================
+// HIGHLIGHT WIN
+// =====================================
+
+function highlightWin(line) {
+
+    renderBoard();
+
+    line.forEach(index => {
+
+        board.children[index]
+
+            .classList.add("win-cell");
+
+    });
+
+}
+
+// =====================================
+// MODALS
+// =====================================
+
+function showWinner(player) {
+
+    winnerTitle.textContent = `Player ${player} Wins!`;
+
+    winnerSubtitle.textContent = "Ready for the next round?";
+
+    winnerModal.classList.add("show");
+
+}
+
+function showDraw() {
+
+    winnerTitle.textContent = "Draw!";
+
+    winnerSubtitle.textContent = "Nobody wins this round.";
+
+    winnerModal.classList.add("show");
+
+}
+
+// =====================================
+// NEW ROUND
+// =====================================
+
+function newRound() {
+
+    gameBoard = Array(9).fill("");
+
+    currentPlayer = "X";
+
+    gameOver = false;
+
+    moveHistory = [];
+
+    updateHistory();
+
+    updateStatus();
+
+    winnerModal.classList.remove("show");
+
+    renderBoard();
+
+}
+
+// =====================================
+// RESET SCORES
+// =====================================
+
+function resetScores() {
+
+    scores = {
+
+        X: 0,
+
+        O: 0,
+
+        D: 0
+
+    };
+
+    updateScores();
+
+    newRound();
+
+}
+// =====================================
+// HANDLE PLAYER MOVE
+// =====================================
 
 function handleMove(index) {
+
     if (gameOver) return;
+
     if (gameBoard[index] !== "") return;
+
     gameBoard[index] = currentPlayer;
-    moveHistory.push({ player: currentPlayer, cell: index + 1 });
+
+    moveHistory.push({
+
+        player: currentPlayer,
+
+        cell: index + 1
+
+    });
+
+    renderBoard();
+
     updateHistory();
-    const winLine = getWinner();
-    if (winLine) {
-        highlightWin(winLine);
-        scores[currentPlayer]++;
-        updateScores();
+
+    const winnerLine = getWinner();
+
+    if (winnerLine) {
+
         gameOver = true;
-        showWinner(currentPlayer);
+
+        highlightWin(winnerLine);
+
+        scores[currentPlayer]++;
+
+        updateScores();
+
+        // ---------- Statistics ----------
+
+        statistics.totalGames++;
+
+        if (currentPlayer === "X") {
+
+            statistics.xWins++;
+
+        } else {
+
+            statistics.oWins++;
+
+        }
+
+        if (statistics.lastWinner === currentPlayer) {
+
+            statistics.currentStreak++;
+
+        } else {
+
+            statistics.currentStreak = 1;
+
+        }
+
+        statistics.lastWinner = currentPlayer;
+
+        if (statistics.currentStreak > statistics.bestStreak) {
+
+            statistics.bestStreak = statistics.currentStreak;
+
+        }
+
+        saveStatistics();
+
+        updateStatisticsUI();
+
+        setTimeout(() => {
+
+            showWinner(currentPlayer);
+
+        }, 400);
+
         return;
+
     }
-    if (gameBoard.every(cell => cell !== "")) {
+
+    // ---------- DRAW ----------
+
+    if (!gameBoard.includes("")) {
+
+        gameOver = true;
+
         scores.D++;
         updateScores();
-        gameOver = true;
-        showDraw();
+
+        statistics.totalGames++;
+
+        statistics.draws++;
+
+        statistics.currentStreak = 0;
+
+        statistics.lastWinner = null;
+
+        saveStatistics();
+
+        updateStatisticsUI();
+
+        setTimeout(() => {
+
+            showDraw();
+
+        }, 400);
+
         return;
+
     }
+
+    // ---------- NEXT TURN ----------
+
     currentPlayer = currentPlayer === "X" ? "O" : "X";
+
     updateStatus();
-    renderBoard();
-    const mode = modeSelect.value;
-    if (mode !== "pvp" && currentPlayer === "O" && !gameOver) {
-        setTimeout(cpuMove, 400);
+
+    // ---------- CPU ----------
+
+    if (
+
+        modeSelect.value !== "pvp" &&
+
+        currentPlayer === "O"
+
+    ) {
+
+        setTimeout(cpuMove, 450);
+
     }
+
 }
+// =====================================
+// CPU MOVE
+// =====================================
 
 function cpuMove() {
+
     if (gameOver) return;
-    const available = [];
-    gameBoard.forEach((cell, index) => { if (cell === "") available.push(index); });
-    if (!available.length) return;
+
+    const empty = [];
+
+    gameBoard.forEach((cell, index) => {
+
+        if (cell === "") {
+
+            empty.push(index);
+
+        }
+
+    });
+
+    if (empty.length === 0) return;
+
     let move;
-    const mode = modeSelect.value;
-    if (mode === "cpu-easy") {
-        move = available[Math.floor(Math.random() * available.length)];
-    } else if (mode === "cpu-medium") {
-        if (Math.random() < 0.7) {
-            move = getBestMove();
-        } else {
-            move = available[Math.floor(Math.random() * available.length)];
-        }
-    } else {
-        move = getBestMoveMinimax();
-        if (move === undefined) move = getBestMove();
+
+    switch (modeSelect.value) {
+
+        case "cpu-hard":
+
+            move = findBestMove();
+            break;
+
+        case "cpu-medium":
+
+            move = Math.random() < 0.7
+                ? findBestMove()
+                : empty[Math.floor(Math.random() * empty.length)];
+
+            break;
+
+        default:
+
+            move = empty[Math.floor(Math.random() * empty.length)];
+
     }
-    gameBoard[move] = "O";
-    moveHistory.push({ player: "O", cell: move + 1 });
-    updateHistory();
-    const winLine = getWinner();
-    if (winLine) {
-        highlightWin(winLine);
-        scores.O++;
-        updateScores();
-        gameOver = true;
-        showWinner("O");
-        return;
-    }
-    if (gameBoard.every(cell => cell !== "")) {
-        scores.D++;
-        updateScores();
-        gameOver = true;
-        showDraw();
-        return;
-    }
-    currentPlayer = "X";
-    updateStatus();
-    renderBoard();
+
+    handleMove(move);
+
 }
 
-function getBestMove() {
-    for (const line of WIN_LINES) {
-        const [a,b,c] = line;
-        const cells = [gameBoard[a], gameBoard[b], gameBoard[c]];
-        if (cells.filter(v => v === "O").length === 2 && cells.includes("")) {
-            return line[cells.indexOf("")];
-        }
-    }
-    for (const line of WIN_LINES) {
-        const [a,b,c] = line;
-        const cells = [gameBoard[a], gameBoard[b], gameBoard[c]];
-        if (cells.filter(v => v === "X").length === 2 && cells.includes("")) {
-            return line[cells.indexOf("")];
-        }
-    }
-    if (gameBoard[4] === "") return 4;
-    const free = [];
-    gameBoard.forEach((cell, index) => { if (cell === "") free.push(index); });
-    return free[Math.floor(Math.random() * free.length)];
-}
+// =====================================
+// MINIMAX
+// =====================================
 
-function getBestMoveMinimax() {
+function findBestMove() {
+
     let bestScore = -Infinity;
-    let bestMove = 0;
+
+    let move;
+
     for (let i = 0; i < 9; i++) {
         if (gameBoard[i] === "") {
             gameBoard[i] = "O";
-            let score = minimax(gameBoard, 0, false);
+
+            let score = minimax(gameBoard, false);
+
             gameBoard[i] = "";
-            if (score > bestScore) { bestScore = score; bestMove = i; }
+
+            if (score > bestScore) {
+
+                bestScore = score;
+
+                move = i;
+
+            }
+
         }
+
     }
-    return bestMove;
+
+    return move;
+
 }
 
-function minimax(boardState, depth, isMaximizing) {
-    const winner = evaluateBoard(boardState);
-    if (winner !== null) {
-        if (winner === "O") return 10 - depth;
-        if (winner === "X") return depth - 10;
-        return 0;
+function minimax(boardState, isMax) {
+
+    const result = evaluateBoard(boardState);
+
+    if (result !== null) {
+
+        return result;
+
     }
-    if (isMaximizing) {
-        let bestScore = -Infinity;
+
+    if (isMax) {
+
+        let best = -Infinity;
+
         for (let i = 0; i < 9; i++) {
             if (boardState[i] === "") {
                 boardState[i] = "O";
-                let score = minimax(boardState, depth + 1, false);
+
+                best = Math.max(best, minimax(boardState, false));
+
                 boardState[i] = "";
-                bestScore = Math.max(score, bestScore);
+
             }
+
         }
-        return bestScore;
-    } else {
-        let bestScore = Infinity;
-        for (let i = 0; i < 9; i++) {
-            if (boardState[i] === "") {
-                boardState[i] = "X";
-                let score = minimax(boardState, depth + 1, true);
-                boardState[i] = "";
-                bestScore = Math.min(score, bestScore);
-            }
-        }
-        return bestScore;
+
+        return best;
+
     }
+
+    let best = Infinity;
+
+    for (let i = 0; i < 9; i++) {
+
+        if (boardState[i] === "") {
+
+            boardState[i] = "X";
+
+            best = Math.min(best, minimax(boardState, true));
+
+            boardState[i] = "";
+
+        }
+
+    }
+
+    return best;
+
 }
 
 function evaluateBoard(boardState) {
     for (const line of WIN_LINES) {
         const [a, b, c] = line;
-        if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
-            return boardState[a];
+
+        if (
+
+            boardState[a] &&
+
+            boardState[a] === boardState[b] &&
+
+            boardState[b] === boardState[c]
+
+        ) {
+
+            return boardState[a] === "O"
+
+                ? 10
+
+                : -10;
+
         }
+
     }
-    if (boardState.every(cell => cell !== "")) return "draw";
+
+    if (!boardState.includes("")) {
+
+        return 0;
+
+    }
+
     return null;
+
 }
 
-function getWinner() {
-    for (const line of WIN_LINES) {
-        const [a,b,c] = line;
-        if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
-            return line;
-        }
-    }
-    return null;
-}
+// =====================================
+// HINT
+// =====================================
 
-function highlightWin(line) {
+hintBtn.addEventListener("click", () => {
+
+    const move = findBestMove();
+
+    if (move === undefined) return;
+
+    board.children[move].classList.add("hint-cell");
+
+    setTimeout(() => {
+
+        board.children[move].classList.remove("hint-cell");
+
+    }, 1500);
+
+});
+
+// =====================================
+// UNDO
+// =====================================
+
+undoBtn.addEventListener("click", () => {
+
+    if (moveHistory.length === 0 || gameOver) return;
+
+    const last = moveHistory.pop();
+
+    gameBoard[last.cell - 1] = "";
+
+    currentPlayer = last.player;
+
     renderBoard();
-    line.forEach(index => { board.children[index].classList.add("win-cell"); });
-}
 
-function updateStatus() {
-    statusText.textContent = currentPlayer + "'s Turn";
-    turnChip.textContent = "Turn: " + currentPlayer;
-}
-
-function updateScores() {
-    scoreX.textContent = scores.X;
-    scoreO.textContent = scores.O;
-    scoreD.textContent = scores.D;
-}
-
-function updateHistory() {
-    historyList.innerHTML = "";
-    moveHistory.slice(-10).forEach(move => {
-        const li = document.createElement("li");
-        li.textContent = move.player + " → Cell " + move.cell;
-        historyList.appendChild(li);
-    });
-}
-
-function showWinner(player) {
-    winnerTitle.textContent = "Player " + player + " Wins!";
-    winnerSubtitle.textContent = "Ready for the next round?";
-    victorySound.currentTime = 0;
-    victorySound.play();
-    launchConfetti();
-    winnerModal.classList.add("show");
-}
-
-function showDraw() {
-    winnerTitle.textContent = "Draw!";
-    winnerSubtitle.textContent = "Nobody wins this round.";
-    winnerModal.classList.add("show");
-}
-
-function newRound() {
-    gameBoard = Array(9).fill("");
-    currentPlayer = "X";
-    gameOver = false;
-    moveHistory = [];
     updateHistory();
-    updateStatus();
-    winnerModal.classList.remove("show");
-    victorySound.pause();
-    victorySound.currentTime = 0;
-    renderBoard();
-}
 
-function resetScores() {
-    scores = { X: 0, O: 0, D: 0 };
-    victorySound.pause();
-    victorySound.currentTime = 0;
+    updateStatus();
+
+});
+
+// =====================================
+// THEME
+// =====================================
+
+themeSelect.addEventListener("change", () => {
+
+    document.body.dataset.theme = themeSelect.value;
+
+});
+
+// =====================================
+// BUTTONS
+// =====================================
+
+newRoundBtn.addEventListener("click", newRound);
+
+winnerNext.addEventListener("click", newRound);
+
+winnerClose.addEventListener("click", () => {
+
+    winnerModal.classList.remove("show");
+
+});
+
+resetAllBtn.addEventListener("click", () => {
+
+    if (confirm("Reset scores and statistics?")) {
+
+        resetScores();
+
+        resetStatistics();
+
+    }
+
+});
+
+// =====================================
+// START GAME
+// =====================================
+
+loadStatistics();
+
+updateStatisticsUI();
+
+updateScores();
+
+updateStatus();
+
+renderBoard();
+
+updateHistory();
+
+// =====================================
+// STATISTICS FUNCTIONS
+// =====================================
+
+function saveStatistics() {
+
+    localStorage.setItem(
+        "ticTacToeStatistics",
+        JSON.stringify(statistics)
+    );
+
+    drawSound.pause();
+    drawSound.currentTime = 0;
     updateScores();
     newRound();
 }
 
-function undoMove() {
-    if (!moveHistory.length) return;
-    const mode = modeSelect.value;
-    if (mode !== "pvp" && moveHistory.length >= 2) {
-        const cpuMv = moveHistory.pop();
-        gameBoard[cpuMv.cell - 1] = "";
-        const playerMv = moveHistory.pop();
-        gameBoard[playerMv.cell - 1] = "";
-        currentPlayer = "X";
-    } else {
-        const last = moveHistory.pop();
-        gameBoard[last.cell - 1] = "";
-        currentPlayer = last.player;
+function loadStatistics() {
+
+    const data = localStorage.getItem("ticTacToeStatistics");
+
+    if (data) {
+
+        statistics = JSON.parse(data);
+
     }
-    gameOver = false;
-    updateHistory();
-    updateStatus();
-    renderBoard();
+
 }
 
-function showHint() {
-    const move = getBestMoveMinimax();
-    renderBoard();
-    if (board.children[move]) {
-        board.children[move].classList.add("hint-cell");
-    }
+function resetStatistics() {
+
+    statistics = {
+
+        totalGames: 0,
+        xWins: 0,
+        oWins: 0,
+        draws: 0,
+        currentStreak: 0,
+        bestStreak: 0,
+        lastWinner: null
+
+    };
+
+    saveStatistics();
+
+    updateStatisticsUI();
+
 }
 
-// Original themeSelect change listener — kept intact for compatibility
-themeSelect.addEventListener("change", function () {
-    document.body.setAttribute("data-theme", this.value);
-});
+function updateStatisticsUI() {
 
-// New theme toggle buttons — update body attribute AND sync hidden select
-themeToggleGroup.addEventListener("click", function (e) {
-    const btn = e.target.closest(".theme-btn");
-    if (!btn) return;
-    const theme = btn.getAttribute("data-theme");
-    document.body.setAttribute("data-theme", theme);
-    themeSelect.value = theme;
-    themeToggleGroup.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-});
+    statGames.textContent = statistics.totalGames;
 
-newRoundBtn.addEventListener("click", newRound);
-resetAllBtn.addEventListener("click", resetScores);
-undoBtn.addEventListener("click", undoMove);
-hintBtn.addEventListener("click", showHint);
-winnerNext.addEventListener("click", newRound);
-winnerClose.addEventListener("click", () => { winnerModal.classList.remove("show"); });
+    statXWins.textContent = statistics.xWins;
 
-updateStatus();
-updateScores();
-renderBoard();
+    statOWins.textContent = statistics.oWins;
 
-function launchConfetti() {
-    const canvas = document.getElementById("confetti");
-    const ctx = canvas.getContext("2d");
+    statDraws.textContent = statistics.draws;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    statCurrent.textContent = statistics.currentStreak;
 
-    const particles = [];
+    statBest.textContent = statistics.bestStreak;
 
-    for (let i = 0; i < 100; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: -20,
-            size: Math.random() * 8 + 4,
-            speed: Math.random() * 4 + 2,
-            color: ["#40f5d2", "#ff7d7d", "#ffffff"][
-                Math.floor(Math.random() * 3)
-            ]
-        });
-    }
+    const total = statistics.totalGames || 1;
 
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const xRate = Math.round((statistics.xWins / total) * 100);
 
-        particles.forEach(p => {
-            p.y += p.speed;
+    const oRate = Math.round((statistics.oWins / total) * 100);
 
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, p.size, p.size);
-        });
+    xRateText.textContent = `${xRate}%`;
+    oRateText.textContent = `${oRate}%`;
 
-        if (particles.some(p => p.y < canvas.height)) {
-            requestAnimationFrame(animate);
-        } else {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-    }
+    xRateBar.style.width = `${xRate}%`;
+    oRateBar.style.width = `${oRate}%`;
 
-    animate();
 }
