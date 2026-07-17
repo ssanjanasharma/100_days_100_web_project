@@ -1,84 +1,111 @@
-// js/financialInsights.js — Enhanced AI insights engine
-
-import { getSummary, getCategoryBreakdown, getMonthlyTrend } from './analyticsEngine.js';
-import { getBudgets } from './budgetManager.js';
-
-/*
- Generate comprehensive financial insights based on transaction data.
- Returns a multi-line string with insights and recommendations.
- */
-export function generateInsights() {
-  const summary = getSummary();
-
-  if (summary.transaction_count === 0) {
-    return '📝 Add transactions to receive AI-powered financial insights.';
-  }
-
-  const insights = [];
-
-  // 1. Overall health assessment
-  const savingsRate = summary.total_income > 0
-    ? Math.round((summary.total_savings / summary.total_income) * 100)
-    : 0;
-
-  if (summary.total_savings > 0) {
-    insights.push(`✅ Great job! You're saving ${savingsRate}% of your income (${formatNum(summary.total_savings)} saved).`);
-  } else if (summary.total_savings === 0) {
-    insights.push('⚠️ You\'re breaking even — income equals expenses. Try to build a savings buffer.');
-  } else {
-    insights.push(`🚨 Warning: You're spending more than you earn! You're ${formatNum(Math.abs(summary.total_savings))} in the red.`);
-  }
-
-  // 2. Savings rate advice
-  if (savingsRate > 0 && savingsRate < 20) {
-    insights.push(`💡 Tip: Financial experts recommend saving at least 20% of income. You're at ${savingsRate}% — try cutting discretionary spending.`);
-  } else if (savingsRate >= 20 && savingsRate < 50) {
-    insights.push(`🌟 Excellent savings rate of ${savingsRate}%! You're on track for strong financial health.`);
-  } else if (savingsRate >= 50) {
-    insights.push(`🏆 Outstanding! A ${savingsRate}% savings rate puts you in elite territory.`);
-  }
-
-  // 3. Top spending category insight
-  const breakdown = getCategoryBreakdown();
-  if (breakdown.length > 0) {
-    const top = breakdown[0];
-    insights.push(`🏷️ Your biggest expense category is "${top.category}" at ${formatNum(top.amount)} (${top.percentage}% of all expenses).`);
-
-    if (top.percentage > 40) {
-      insights.push(`⚠️ "${top.category}" makes up over 40% of your spending. Consider diversifying or reducing this.`);
+// js/financialInsights.js - Enhanced AI insights
+export function generateInsights(transactions) {
+    if (transactions.length === 0) {
+        return "Add transactions to receive AI insights.";
     }
-  }
 
-  // 4. Budget warnings
-  const budgets = getBudgets();
-  const overBudget = budgets.filter(b => b.percentage >= 90);
-  if (overBudget.length > 0) {
-    const names = overBudget.map(b => b.category).join(', ');
-    insights.push(`🎯 Budget alert: ${names} ${overBudget.length === 1 ? 'is' : 'are'} at or near the spending limit this month.`);
-  }
+    let income = 0;
+    let expense = 0;
 
-  // 5. Monthly trend insight
-  const trend = getMonthlyTrend();
-  if (trend.length >= 2) {
-    const latest = trend[trend.length - 1];
-    const prev = trend[trend.length - 2];
-    const expenseChange = latest.expense - prev.expense;
+    transactions.forEach((transaction) => {
+        if (transaction.type === "Income") {
+            income += transaction.amount;
+        } else {
+            expense += transaction.amount;
+        }
+    });
 
-    if (expenseChange > 0) {
-      insights.push(`📈 Your expenses increased by ${formatNum(expenseChange)} compared to last month.`);
-    } else if (expenseChange < 0) {
-      insights.push(`📉 Your expenses decreased by ${formatNum(Math.abs(expenseChange))} compared to last month. Keep it up!`);
+    if (expense > income) {
+        return "Your expenses are higher than your income. Try reducing unnecessary spending.";
     }
-  }
 
-  // 6. Transaction volume
-  if (summary.transaction_count >= 50) {
-    insights.push(`📊 You have ${summary.transaction_count} transactions tracked — excellent record keeping!`);
-  }
-
-  return insights.join('\n\n');
+    return "Great job! Your financial health looks stable.";
 }
 
-function formatNum(n) {
-  return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+export function getDetailedInsights(transactions) {
+    if (transactions.length === 0) {
+        return [];
+    }
+
+    const insights = [];
+    const totalIncome = transactions.filter(t => t.type === 'Income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = transactions.filter(t => t.type === 'Expense').reduce((sum, t) => sum + t.amount, 0);
+    const balance = totalIncome - totalExpense;
+
+    // Financial health check
+    if (balance > 0) {
+        insights.push({
+            title: '✅ Financial Health: Positive',
+            message: `You have $${balance.toFixed(2)} in surplus after all expenses.`,
+            detail: `Total Income: $${totalIncome.toFixed(2)} | Total Expenses: $${totalExpense.toFixed(2)}`,
+            type: 'success'
+        });
+    } else if (balance < 0) {
+        insights.push({
+            title: '⚠️ Financial Health: Negative',
+            message: `Your expenses exceed income by $${Math.abs(balance).toFixed(2)}. Consider reviewing your spending.`,
+            detail: `Total Income: $${totalIncome.toFixed(2)} | Total Expenses: $${totalExpense.toFixed(2)}`,
+            type: 'warning'
+        });
+    }
+
+    // Top spending categories
+    const expensesByCategory = {};
+    transactions.filter(t => t.type === 'Expense').forEach(t => {
+        expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+    });
+
+    const sortedCategories = Object.entries(expensesByCategory)
+        .sort((a, b) => b[1] - a[1]);
+
+    if (sortedCategories.length > 0) {
+        const [topCategory, topAmount] = sortedCategories[0];
+        const percentage = totalExpense > 0 ? (topAmount / totalExpense * 100).toFixed(1) : 0;
+        insights.push({
+            title: '💡 Top Spending Category',
+            message: `${topCategory} accounts for ${percentage}% of your total expenses ($${topAmount.toFixed(2)}).`,
+            detail: `Consider if you can optimize this category.`,
+            type: 'info'
+        });
+    }
+
+    // Savings rate
+    if (totalIncome > 0) {
+        const savingsRate = ((totalIncome - totalExpense) / totalIncome * 100);
+        insights.push({
+            title: '📊 Savings Rate',
+            message: `You're saving ${savingsRate.toFixed(1)}% of your income.`,
+            detail: savingsRate > 20 ? 'Excellent! Keep up the good work!' :
+                savingsRate > 10 ? 'Good, but you could save more.' :
+                'Consider increasing your savings rate.',
+            type: savingsRate > 20 ? 'success' : savingsRate > 0 ? 'info' : 'warning'
+        });
+    }
+
+    // Transaction count insight
+    if (transactions.length > 30) {
+        insights.push({
+            title: '📈 High Transaction Volume',
+            message: `You have ${transactions.length} total transactions.`,
+            detail: 'Consider reviewing if all are necessary or if you can consolidate some.',
+            type: 'info'
+        });
+    }
+
+    // Average transaction insight
+    if (transactions.length > 0) {
+        const avgIncome = totalIncome / transactions.filter(t => t.type === 'Income').length || 0;
+        const avgExpense = totalExpense / transactions.filter(t => t.type === 'Expense').length || 0;
+        
+        if (avgIncome > 0) {
+            insights.push({
+                title: '📊 Average Transaction',
+                message: `Average income: $${avgIncome.toFixed(2)} | Average expense: $${avgExpense.toFixed(2)}`,
+                detail: 'Track your average spending patterns.',
+                type: 'info'
+            });
+        }
+    }
+
+    return insights;
 }
