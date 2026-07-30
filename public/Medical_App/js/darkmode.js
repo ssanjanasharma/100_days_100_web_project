@@ -1,45 +1,43 @@
 // Theme Toggle Functionality
-const themeToggleBtn = document.getElementById("themeToggleBtn");
+const themeToggleBtn = document.getElementById("themeToggleBtn") || document.getElementById("themeToggle");
 const htmlElement = document.documentElement;
 
-// Toggle theme
-const toggleTheme = () => {
-    const currentTheme = htmlElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+// Function to apply a theme
+const applyTheme = (theme) => {
+    htmlElement.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-theme', theme);
+    document.body.classList.toggle('dark-mode', theme === 'dark');
+    localStorage.setItem('theme', theme);
     
-    htmlElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    
-    // Update button text/icon
+    // Update button text/icon/emoji
     if (themeToggleBtn) {
         const icon = themeToggleBtn.querySelector('i');
+        const label = themeToggleBtn.querySelector('span');
         if (icon) {
-            icon.className = newTheme === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+            icon.className = theme === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+        }
+        if (label) {
+            label.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+        }
+        // If it's a simple emoji button (e.g. reschedule or feedback page)
+        if (!icon && !label) {
+            themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
     }
 };
 
-// Add click listener
+// Toggle theme event handler
+const toggleTheme = () => {
+    const current = htmlElement.getAttribute('data-theme') || localStorage.getItem('theme') || 'light';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+};
+
 if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', toggleTheme);
 }
 
-// Load saved theme on page load
-window.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    htmlElement.setAttribute('data-theme', savedTheme);
-    
-    // Update button icon
-    if (themeToggleBtn) {
-        const icon = themeToggleBtn.querySelector('i');
-        if (icon) {
-            icon.className = savedTheme === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
-        }
-    }
-});
+// Load saved theme on load
+const savedTheme = localStorage.getItem('theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-// Respect system preference if no saved theme
-if (!localStorage.getItem('theme')) {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    htmlElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-}
+applyTheme(savedTheme);
