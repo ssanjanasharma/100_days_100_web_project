@@ -379,6 +379,21 @@ textarea{
 
     transition:0.3s;
 }
+#profilePhoto
+{
+    padding: 10px;
+    cursor: pointer;
+}
+#photoPreview
+{
+    width:80px;
+    height:80px;
+    margin-top:12px;
+    border-radius:50%;
+    object-fit:cover;
+    display:none;
+    border:3px solid #2563eb;
+}
 
 input::placeholder,
 textarea::placeholder{
@@ -530,6 +545,66 @@ textarea{
         display:none;
     }
 
+}
+
+@media (min-width: 769px) and (max-width: 1400px){
+
+    body{
+        overflow:auto;
+    }
+
+    .app{
+        display:grid;
+        grid-template-columns:240px 1fr;
+        grid-template-areas:
+            "sidebar editor"
+            "sidebar preview";
+
+        gap:20px;
+        height:auto;
+        align-items:start;
+    }
+
+    .sidebar{
+        grid-area:sidebar;
+        height:calc(100vh - 36px);
+        position:sticky;
+        top:18px;
+    }
+
+    .editor{
+        grid-area:editor;
+        overflow:visible;
+        padding-right:0;
+    }
+
+    .preview{
+        grid-area:preview;
+        display:block;
+        overflow:visible;
+        padding-right:0;
+    }
+
+    .form-card{
+        width:100%;
+        margin-bottom:0;
+    }
+
+    .resume-sheet{
+        max-width:100%;
+        min-height:auto;
+    }
+
+    .top-bar h1{
+        font-size:32px;
+    }
+    .score-circle{
+        width:130px;
+        height:130px;
+        font-size:42px;
+    }
+    
+    
 }
 
 @media(max-width:900px){
@@ -796,3 +871,201 @@ body.light-mode .resume-section h3{
     font-weight:600;
 }
 
+/* =========================================
+   TEMPLATE LAYOUT OVERRIDES (Fixes #7468)
+========================================= */
+
+/* --- 1. CLASSIC TEMPLATE LAYOUT --- */
+/* A traditional, formal aesthetic: Left-aligned, bold serif accents, subtle borders */
+.resume-sheet.classic-template {
+    border-top: 6px solid #111827; /* Charcoal/Black header border instead of blue */
+    font-family: "Georgia", "Times New Roman", serif;
+}
+
+.resume-sheet.classic-template .resume-header {
+    text-align: left; /* Left align classic format */
+    border-bottom: 2px solid #111827;
+    padding-bottom: 20px;
+}
+
+.resume-sheet.classic-template .resume-header h2 {
+    color: #4b5563; /* Muted subtitle */
+    font-size: 24px;
+}
+
+.resume-sheet.classic-template .resume-contact,
+.resume-sheet.classic-template .resume-links {
+    justify-content: flex-start;
+    color: #111827;
+}
+
+.resume-sheet.classic-template .resume-section h3 {
+    color: #111827;
+    border-bottom: 1px solid #111827;
+    text-transform: uppercase;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+.resume-sheet.classic-template .skill-tag {
+    background: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+}
+
+
+/* --- 2. MINIMAL TEMPLATE LAYOUT --- */
+/* Sleek, understated, compact: Clean sans-serif, no top accent bar, elegant layout spacing */
+.resume-sheet.minimal-template {
+    border-top: none; /* Strip off the loud top accent line */
+    padding: 40px;
+}
+
+.resume-sheet.minimal-template .resume-header {
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.resume-sheet.minimal-template .resume-header h1 {
+    font-size: 42px;
+    font-weight: 300; /* Ultra clean thin weight heading */
+    letter-spacing: -1px;
+}
+
+.resume-sheet.minimal-template .resume-header h2 {
+    color: #6b7280;
+    font-size: 20px;
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+.resume-sheet.minimal-template .resume-contact,
+.resume-sheet.minimal-template .resume-links {
+    justify-content: flex-start;
+    gap: 16px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.resume-sheet.minimal-template .resume-section {
+    margin-bottom: 28px;
+}
+
+.resume-sheet.minimal-template .resume-section h3 {
+    color: #374151;
+    font-size: 16px;
+    border-bottom: 1px solid #f3f4f6;
+    font-weight: 600;
+}
+
+.resume-sheet.minimal-template .skill-tag {
+    background: transparent;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px; /* Boxier chips for minimal look */
+}
+.header-row{
+    display: flex;
+    align-items: flex-start;
+    
+}
+.header-content{
+    flex :1;
+  text-align: center;
+}
+.resume-photo{
+     width:120px;
+    height:120px;
+
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+    margin:0 0 auto 20px;
+    border:4px solid #2563eb;
+    overflow: hidden;
+    margin-left: auto;
+}
+.resume-contact{
+    text-align:center;
+}
+#selectionSelect{
+    width:100%;
+    padding:16px 18px;
+    border-radius:14px;
+    background:#1b1f2d;
+    background:rgba(255,255,255,.04);
+    color:white;
+    font-size:15px;
+    outline:none;
+    margin-top:8px;
+}
+#selectionSelect option{
+    background:#1b1f2d;
+    color:#fff;
+}
+#addSectionBtn{
+
+    width:100%;
+    margin-top:12px;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    background:#2563eb;
+    color:white;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+#addSectionBtn:hover{
+    background:#1d4ed8;
+}
+#dynamicSections{
+    margin-top:20px;
+}
+
+#dynamicSections .form-group{
+    margin-top:18px;
+}
+#dynamicSections .form-group label{
+    width:100%;
+    padding: 16px;
+    margin-top: 8px;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.04);
+    color:white;
+    resize:vertical;
+}
+#dynamicSections textarea{
+    width:100%;
+    min-height:120px;
+    padding:16px;
+    background:#1b1f2d;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    resize:vertical;
+    outline:none;
+    margin-top:10px;
+}
+
+#dynamicSections textarea::placeholder{
+    color:#9ca3af;
+}
+.section-order-container{
+    margin:25px 0;
+}
+.section-order-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 16px;
+    margin-top:10px;
+    border-radius:10px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+    cursor:move;
+    color:white;
+}
