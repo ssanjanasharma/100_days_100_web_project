@@ -28,16 +28,6 @@ Unlike online PDF services that require uploading your private files and documen
 
 ---
 
-## 🛠️ Built With
-
-* **Core**: HTML5, Vanilla CSS3 (with responsive custom properties).
-* **Logic**: Vanilla ES6+ JavaScript.
-* **DOCX Parser**: [docx-preview v0.4.1](https://github.com/VolodymyrBaydalka/docxjs) & [JSZip](https://github.com/Stuk/jszip) (loaded via CDN).
-* **PDF Fallback Compiler**: [html2pdf.js v0.10.1](https://github.com/ekoopmans/html2pdf.js) (loaded via CDN).
-* **Icons**: [FontAwesome v6.4.0](https://fontawesome.com/).
-
----
-
 ## 💻 How to Run Locally
 
 ### Option 1: Direct File Opening
