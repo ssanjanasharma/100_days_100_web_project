@@ -112,7 +112,7 @@ const elToastMessage = document.getElementById('toast-message');
 function showToast(message, duration = 3000) {
   elToastMessage.textContent = message;
   elToast.classList.remove('hidden');
-  
+
   // Reset animation
   elToast.style.animation = 'none';
   elToast.offsetHeight; // trigger reflow
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     await initDashboard();
   }
-  
+
   // Load Icons
   lucide.createIcons();
 });
@@ -163,11 +163,11 @@ function initShareViewer(payload) {
     viewerCertTitle.textContent = data.title;
     viewerCertIssuer.textContent = data.issuer;
     viewerCertCategory.textContent = data.category || 'Professional';
-    
+
     // Dates
     viewerCertDate.textContent = formatDate(data.issueDate);
     viewerCertExpiry.textContent = data.expiryDate ? formatDate(data.expiryDate) : 'Permanent / Non-expiring';
-    
+
     // Credential ID
     if (data.credentialId) {
       viewerCertId.textContent = data.credentialId;
@@ -194,12 +194,41 @@ function initShareViewer(payload) {
 
     // Image preview
     const imageSrc = data.image || DEFAULT_CERT_PLACEHOLDER;
-    viewerCertImg.src = imageSrc;
+
+    try {
+      const parsedUrl = new URL(imageSrc, window.location.origin);
+
+      if (['http:', 'https:'].includes(parsedUrl.protocol)) {
+        viewerCertImg.src = parsedUrl.href;
+      } else if (imageSrc.startsWith('data:image/')) {
+        viewerCertImg.src = imageSrc;
+      } else {
+        viewerCertImg.src = DEFAULT_CERT_PLACEHOLDER;
+      }
+    } catch {
+      viewerCertImg.src = DEFAULT_CERT_PLACEHOLDER;
+    }
 
     // Verify Button
     if (data.credentialUrl) {
-      viewerVerifyBtn.href = data.credentialUrl;
-      viewerVerifyBtn.classList.remove('hidden');
+      try {
+        const verifyUrl = new URL(
+          data.credentialUrl,
+          window.location.origin
+        );
+
+        if (
+          verifyUrl.protocol === 'http:' ||
+          verifyUrl.protocol === 'https:'
+        ) {
+          viewerVerifyBtn.href = verifyUrl.href;
+          viewerVerifyBtn.classList.remove('hidden');
+        } else {
+          viewerVerifyBtn.classList.add('hidden');
+        }
+      } catch {
+        viewerVerifyBtn.classList.add('hidden');
+      }
     } else {
       viewerVerifyBtn.classList.add('hidden');
     }
@@ -238,7 +267,7 @@ function setupEventListeners() {
   // Opening Form Modal
   btnAddCert.onclick = () => openFormModal();
   emptyStateAddBtn.onclick = () => openFormModal();
-  
+
   // Closing Modals
   btnCloseFormModal.onclick = closeFormModal;
   btnCancelForm.onclick = closeFormModal;
@@ -354,7 +383,7 @@ function handleFileSelected(file) {
     showToast('Only image files (PNG, JPG, SVG, WebP) are supported.');
     return;
   }
-  
+
   // Warn if larger than 2.5MB
   if (file.size > 2.5 * 1024 * 1024) {
     showToast('Warning: Large images may slow down local storage.');
@@ -368,7 +397,7 @@ function handleFileSelected(file) {
     // Show Preview
     previewImg.src = selectedFileBase64;
     previewFileName.textContent = selectedFileName;
-    
+
     uploadZone.classList.add('hidden');
     previewContainer.classList.remove('hidden');
   };
@@ -381,7 +410,7 @@ function resetFileSelection() {
   formFile.value = '';
   previewImg.src = '';
   previewFileName.textContent = '';
-  
+
   uploadZone.classList.remove('hidden');
   previewContainer.classList.add('hidden');
 }
@@ -401,7 +430,7 @@ function renderDashboard() {
   // Search filter
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(c => 
+    filtered = filtered.filter(c =>
       c.title.toLowerCase().includes(q) ||
       c.issuer.toLowerCase().includes(q) ||
       (c.skills && c.skills.some(skill => skill.toLowerCase().includes(q))) ||
@@ -438,38 +467,49 @@ function renderDashboard() {
       card.onclick = () => openDetailsModal(cert);
 
       const previewImage = cert.image || DEFAULT_CERT_PLACEHOLDER;
-      
+
       // Skills markup
       let skillsHtml = '';
       if (cert.skills && cert.skills.length > 0) {
-        skillsHtml = cert.skills.slice(0, 3).map(s => `<span class="skill-tag">${s}</span>`).join('');
+        skillsHtml = cert.skills
+          .slice(0, 3)
+          .map(s => `<span class="skill-tag">${escapeHTML(s)}</span>`)
+          .join('');
       }
 
       card.innerHTML = `
-        <div class="cert-card-preview">
-          <img src="${previewImage}" alt="${cert.title}">
-          <span class="cert-card-category-badge">${cert.category}</span>
+    <div class="cert-card-preview">
+        <img src="${escapeHTML(previewImage)}" alt="${escapeHTML(cert.title)}">
+        <span class="cert-card-category-badge">${escapeHTML(cert.category)}</span>
+    </div>
+
+    <div class="cert-card-content">
+        <div class="cert-card-header">
+            <h3 class="cert-card-title">${escapeHTML(cert.title)}</h3>
+            <span class="cert-card-issuer">${escapeHTML(cert.issuer)}</span>
         </div>
-        <div class="cert-card-content">
-          <div class="cert-card-header">
-            <h3 class="cert-card-title">${cert.title}</h3>
-            <span class="cert-card-issuer">${cert.issuer}</span>
-          </div>
-          <div class="cert-card-skills">
+
+        <div class="cert-card-skills">
             ${skillsHtml}
-          </div>
-          <div class="cert-card-meta">
-            <div class="cert-card-date">
-              <i data-lucide="calendar"></i>
-              <span>${formatDate(cert.issueDate)}</span>
-            </div>
-            <span>${cert.expiryDate ? 'Expires: ' + formatDate(cert.expiryDate) : 'Permanent'}</span>
-          </div>
         </div>
-      `;
+
+        <div class="cert-card-meta">
+            <div class="cert-card-date">
+                <i data-lucide="calendar"></i>
+                <span>${escapeHTML(formatDate(cert.issueDate))}</span>
+            </div>
+            <span>
+                ${cert.expiryDate
+          ? `Expires: ${escapeHTML(formatDate(cert.expiryDate))}`
+          : "Permanent"
+        }
+            </span>
+        </div>
+    </div>
+`;
       elGrid.appendChild(card);
     });
-    
+
     // Refresh Icons for newly injected elements
     lucide.createIcons();
   }
@@ -513,7 +553,7 @@ function updateCategorySelectors() {
 
   // Update category pills quick filters
   elCategoryPillsContainer.innerHTML = '';
-  
+
   // All Pill
   const allPill = document.createElement('button');
   allPill.className = `pill ${activeCategory === 'all' ? 'active' : ''}`;
@@ -546,7 +586,7 @@ function updateCategorySelectors() {
 function openFormModal(cert = null) {
   formCert.reset();
   resetFileSelection();
-  
+
   if (cert) {
     // EDIT MODE
     modalFormTitle.textContent = 'Edit Certificate';
@@ -559,7 +599,7 @@ function openFormModal(cert = null) {
     formCredentialId.value = cert.credentialId || '';
     formCredentialUrl.value = cert.credentialUrl || '';
     formSkills.value = cert.skills ? cert.skills.join(', ') : '';
-    
+
     if (cert.image) {
       selectedFileBase64 = cert.image;
       previewImg.src = cert.image;
@@ -594,8 +634,8 @@ async function handleFormSubmit(e) {
   const credentialId = formCredentialId.value.trim() || null;
   const credentialUrl = formCredentialUrl.value.trim() || null;
   const skills = formSkills.value.split(',')
-                           .map(s => s.trim())
-                           .filter(s => s.length > 0);
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
 
   const certData = {
     title,
@@ -641,11 +681,11 @@ function openDetailsModal(cert) {
   detailCertTitle.textContent = cert.title;
   detailCertIssuer.textContent = cert.issuer;
   detailCertCategory.textContent = cert.category;
-  
+
   // Date formatters
   detailCertDate.textContent = formatDate(cert.issueDate);
   detailCertExpiry.textContent = cert.expiryDate ? formatDate(cert.expiryDate) : 'Permanent / Non-expiring';
-  
+
   // ID display
   if (cert.credentialId) {
     detailCertId.textContent = cert.credentialId;
@@ -668,30 +708,44 @@ function openDetailsModal(cert) {
   }
 
   // Image Source
-  detailCertImg.src = cert.image || DEFAULT_CERT_PLACEHOLDER;
+  const imageUrl = cert.image || DEFAULT_CERT_PLACEHOLDER;
+
+  try {
+    const parsedUrl = new URL(imageUrl, window.location.origin);
+
+    if (['http:', 'https:'].includes(parsedUrl.protocol)) {
+      detailCertImg.src = parsedUrl.href;
+    } else {
+      detailCertImg.src = DEFAULT_CERT_PLACEHOLDER;
+    }
+  } catch {
+    detailCertImg.src = DEFAULT_CERT_PLACEHOLDER;
+  }
 
   // External verify button
   if (cert.credentialUrl) {
-    detailVerifyBtn.href = cert.credentialUrl;
-    detailVerifyBtn.classList.remove('hidden');
+    try {
+      const verifyUrl = new URL(cert.credentialUrl, window.location.origin);
+
+      if (verifyUrl.protocol === 'http:' || verifyUrl.protocol === 'https:') {
+        detailVerifyBtn.href = verifyUrl.href;
+        detailVerifyBtn.classList.remove('hidden');
+      } else {
+        detailVerifyBtn.classList.add('hidden');
+      }
+    } catch {
+      detailVerifyBtn.classList.add('hidden');
+    }
   } else {
     detailVerifyBtn.classList.add('hidden');
   }
-
-  modalDetails.classList.remove('hidden');
-  lucide.createIcons();
 }
 
 // ==========================================================================
 // SHARING LINK CODE GENERATION
 // ==========================================================================
 function openShareModal(cert) {
-  // Create sharing model. Since base64 image might be too large for standard URL string limits,
-  // we will optimize the share model by sending a slim version of the image if it's very small,
-  // or fall back to metadata sharing. To guarantee the sharing link is ALWAYS functional,
-  // we create a payload. If the image is large, we strip it out, and the share-viewer dynamically
-  // generates a beautiful CSS/SVG certificate layout, which looks gorgeous and is fully compatible!
-  
+
   const sharePayload = {
     title: cert.title,
     issuer: cert.issuer,
@@ -718,9 +772,9 @@ function openShareModal(cert) {
       binaryStr += String.fromCharCode(utf8Bytes[i]);
     }
     const base64 = btoa(binaryStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    
+
     const shareUrl = `${window.location.origin}${window.location.pathname}?share=${base64}`;
-    
+
     shareLinkInput.value = shareUrl;
     modalShare.classList.remove('hidden');
     lucide.createIcons();
@@ -769,7 +823,7 @@ async function handleImportBackup(e) {
   reader.onload = async (event) => {
     try {
       const data = JSON.parse(event.target.result);
-      
+
       // Basic validation
       if (!Array.isArray(data)) {
         throw new Error('Backup file must be a JSON array of certificates.');
@@ -790,9 +844,9 @@ async function handleImportBackup(e) {
 
         // Upsert logic: check if ID already exists
         const exists = certificates.some(c => c.id === cert.id);
-        
+
         await db.updateCertificate(cert); // puts it into IndexedDB
-        
+
         if (exists) {
           certificates = certificates.map(c => c.id === cert.id ? cert : c);
           updateCount++;
